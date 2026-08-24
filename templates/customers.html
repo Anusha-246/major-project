@@ -1,0 +1,64 @@
+{% extends "base.html" %}
+{% block title %}Customers{% endblock %}
+{% block page_title %}Customer management{% endblock %}
+{% block page_sub %}Search, filter, and inspect behaviour shift, churn, value, and retention{% endblock %}
+{% block content %}
+{% if error %}<div class="alert alert-warning">{{ error }}</div>{% endif %}
+<form class="filter-bar panel">
+  <input class="form-control" name="q" value="{{ q or '' }}" placeholder="Search ID, name, or city">
+  <select class="form-select" name="risk">
+    <option value="">All risk levels</option>
+    {% for r in ['Low','Medium','High','Critical'] %}
+      <option value="{{ r }}" {% if risk==r %}selected{% endif %}>{{ r }}</option>
+    {% endfor %}
+  </select>
+  <select class="form-select" name="shift">
+    <option value="">All shifts</option>
+    {% for r in ['Normal','Mild Shift','Significant Shift','Critical Shift'] %}
+      <option value="{{ r }}" {% if shift==r %}selected{% endif %}>{{ r }}</option>
+    {% endfor %}
+  </select>
+  <select class="form-select" name="segment">
+    <option value="">All segments</option>
+    {% for s in segments %}
+      <option value="{{ s.segment_name }}" {% if segment==s.segment_name %}selected{% endif %}>{{ s.segment_name }}</option>
+    {% endfor %}
+  </select>
+  <select class="form-select" name="sort">
+    <option value="churn_desc" {% if sort=='churn_desc' %}selected{% endif %}>Churn probability</option>
+    <option value="shift_desc" {% if sort=='shift_desc' %}selected{% endif %}>Behaviour shift</option>
+    <option value="value_desc" {% if sort=='value_desc' %}selected{% endif %}>Future value</option>
+    <option value="name" {% if sort=='name' %}selected{% endif %}>Name</option>
+  </select>
+  <button class="btn btn-primary">Apply</button>
+</form>
+<div class="panel table-wrap">
+  <table class="table table-hover align-middle">
+    <thead><tr>
+      <th>Customer</th><th>Branch</th><th>Churn</th><th>Risk</th><th>Shift</th><th>Segment</th><th>Future value</th><th>VaR</th>
+    </tr></thead>
+    <tbody>
+    {% for row in rows %}
+      <tr>
+        <td><a href="{{ url_for('customers.detail', customer_id=row.customer_id) }}">{{ row.full_name }}</a><div class="tiny">{{ row.customer_id }}</div></td>
+        <td>{{ row.branch_id }}<div class="tiny">{{ row.city }}</div></td>
+        <td>{{ '%.0f'|format(row.probability*100) }}%</td>
+        <td><span class="pill {{ row.risk_level|lower }}">{{ row.risk_level }}</span></td>
+        <td>{{ row.shift_score }}<div class="tiny">{{ row.classification }}</div></td>
+        <td>{{ row.segment_name }}</td>
+        <td>₹{{ '{:,.0f}'.format(row.predicted_future_value) }}</td>
+        <td>₹{{ '{:,.0f}'.format(row.value_at_risk) }}</td>
+      </tr>
+    {% endfor %}
+    </tbody>
+  </table>
+  <div class="d-flex justify-content-between">
+    <span class="text-muted">{{ total }} customers</span>
+    <div>
+      {% if page > 1 %}<a class="btn btn-sm btn-outline-secondary" href="?page={{ page-1 }}&q={{ q }}&risk={{ risk }}&shift={{ shift }}&segment={{ segment }}&sort={{ sort }}">Prev</a>{% endif %}
+      <span class="mx-2">Page {{ page }} / {{ pages }}</span>
+      {% if page < pages %}<a class="btn btn-sm btn-outline-secondary" href="?page={{ page+1 }}&q={{ q }}&risk={{ risk }}&shift={{ shift }}&segment={{ segment }}&sort={{ sort }}">Next</a>{% endif %}
+    </div>
+  </div>
+</div>
+{% endblock %}

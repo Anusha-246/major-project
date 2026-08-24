@@ -1,0 +1,28 @@
+{% extends "base.html" %}
+{% block title %}Alerts{% endblock %}
+{% block page_title %}Risk alerts{% endblock %}
+{% block content %}
+<form class="filter-bar panel">
+  <select class="form-select" name="severity">
+    <option value="">All severities</option>
+    {% for s in ['Critical','High'] %}
+      <option value="{{ s }}" {% if severity==s %}selected{% endif %}>{{ s }}</option>
+    {% endfor %}
+  </select>
+  <button class="btn btn-primary">Filter</button>
+</form>
+<div class="panel">
+  {% for a in alerts %}
+    <div class="alert-item">
+      <div class="d-flex justify-content-between">
+        <strong>{{ a.alert_type }}</strong>
+        <span class="pill {{ a.severity|lower }}">{{ a.severity }}</span>
+      </div>
+      <p class="mb-1">{{ a.message }}</p>
+      <div class="tiny">{{ a.created_at }} · customer {{ a.customer_id or '—' }} · branch {{ a.branch_id or '—' }}</div>
+    </div>
+  {% else %}
+    <p class="text-muted">No alerts generated yet. Load the demo dataset first.</p>
+  {% endfor %}
+</div>
+{% endblock %}

@@ -1,0 +1,39 @@
+{% extends "base.html" %}
+{% block title %}AI Assistant{% endblock %}
+{% block page_title %}AI banking assistant{% endblock %}
+{% block page_sub %}Ask about churn, behaviour shifts, value, branches, retention, and alerts{% endblock %}
+{% block content %}
+<div class="panel assistant">
+  <div id="chat" class="chat"></div>
+  <form id="askForm" class="d-flex gap-2 mt-3">
+    <input class="form-control" id="q" placeholder="e.g. Which branches have the highest churn?">
+    <button class="btn btn-primary">Ask</button>
+  </form>
+</div>
+{% endblock %}
+{% block scripts %}
+<script>
+const chat = document.getElementById('chat');
+function add(role, text){
+  const div = document.createElement('div');
+  div.className = 'bubble ' + role;
+  div.textContent = text;
+  chat.appendChild(div);
+  chat.scrollTop = chat.scrollHeight;
+}
+add('bot', 'Ask me about churn, behaviour shifts, high-risk customers, value at risk, branch performance, retention, or alerts.');
+document.getElementById('askForm').addEventListener('submit', async (e) => {
+  e.preventDefault();
+  const q = document.getElementById('q').value.trim();
+  if(!q) return;
+  add('user', q);
+  document.getElementById('q').value = '';
+  const res = await fetch('{{ url_for("assistant.api") }}', {
+    method:'POST', headers:{'Content-Type':'application/json'},
+    body: JSON.stringify({question:q})
+  });
+  const data = await res.json();
+  add('bot', data.answer);
+});
+</script>
+{% endblock %}

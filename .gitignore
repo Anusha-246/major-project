@@ -1,0 +1,14 @@
+# Local virtual environment
+.venv/
+venv/
+__pycache__/
+*.pyc
+uploads/*
+!uploads/.gitkeep
+models/*.joblib
+models/metrics.json
+dataset/*.csv
+database/*.db
+.env
+.idea/
+.vscode/

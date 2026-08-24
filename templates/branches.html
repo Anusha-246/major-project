@@ -1,0 +1,37 @@
+{% extends "base.html" %}
+{% block title %}Branches{% endblock %}
+{% block page_title %}Branch analytics{% endblock %}
+{% block content %}
+<div class="row g-3">
+  {% for r in regions %}
+  <div class="col-md-3">
+    <div class="kpi">
+      <span>{{ r.region }}</span>
+      <strong>{{ '%.1f'|format(r.churn_rate*100) }}%</strong>
+      <div class="tiny">{{ r.total_customers }} customers · VaR ₹{{ '{:,.0f}'.format(r.value_at_risk) }}</div>
+    </div>
+  </div>
+  {% endfor %}
+</div>
+<div class="panel table-wrap mt-3">
+  <table class="table table-hover">
+    <thead><tr>
+      <th>Branch</th><th>Region</th><th>Customers</th><th>Churn rate</th><th>High risk</th><th>Shifts</th><th>Avg shift</th><th>Value at risk</th>
+    </tr></thead>
+    <tbody>
+    {% for b in branches %}
+      <tr>
+        <td><a href="{{ url_for('branches.detail', branch_id=b.branch_id) }}">{{ b.branch_name }}</a></td>
+        <td>{{ b.region }}</td>
+        <td>{{ b.total_customers }}</td>
+        <td>{{ '%.1f'|format((b.churn_rate or 0)*100) }}%</td>
+        <td>{{ b.high_risk }}</td>
+        <td>{{ b.shifts }}</td>
+        <td>{{ '%.1f'|format(b.avg_shift or 0) }}</td>
+        <td>₹{{ '{:,.0f}'.format(b.value_at_risk or 0) }}</td>
+      </tr>
+    {% endfor %}
+    </tbody>
+  </table>
+</div>
+{% endblock %}

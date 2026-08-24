@@ -1,0 +1,35 @@
+{% extends "base.html" %}
+{% block title %}Dashboard{% endblock %}
+{% block page_title %}Banking analytics dashboard{% endblock %}
+{% block content %}
+<div class="kpi-grid">
+  <div class="kpi"><span>Total Customers</span><strong>{{ '{:,}'.format(kpis.total_customers or 0) }}</strong></div>
+  <div class="kpi warn"><span>At-Risk Customers</span><strong>{{ '{:,}'.format(kpis.at_risk or 0) }}</strong></div>
+  <div class="kpi danger"><span>Predicted Churners</span><strong>{{ '{:,}'.format(kpis.predicted_churners or 0) }}</strong></div>
+  <div class="kpi"><span>Behaviour Shifts</span><strong>{{ '{:,}'.format(kpis.behaviour_shifts or 0) }}</strong></div>
+  <div class="kpi danger"><span>Critical Customers</span><strong>{{ '{:,}'.format(kpis.critical_customers or 0) }}</strong></div>
+  <div class="kpi"><span>Avg Churn Probability</span><strong>{{ '%.1f'|format((kpis.avg_churn or 0)*100) }}%</strong></div>
+  <div class="kpi gold"><span>Customer Value at Risk</span><strong>₹{{ '{:,.0f}'.format(kpis.value_at_risk or 0) }}</strong></div>
+</div>
+<div class="row g-3 mt-1">
+  <div class="col-lg-8"><div class="panel"><h2>Churn trend</h2><canvas id="churnTrend"></canvas></div></div>
+  <div class="col-lg-4"><div class="panel"><h2>Risk distribution</h2><canvas id="riskDist"></canvas></div></div>
+  <div class="col-lg-6"><div class="panel"><h2>Behaviour shift classes</h2><canvas id="shiftTrend"></canvas></div></div>
+  <div class="col-lg-6"><div class="panel"><h2>Branch-wise churn</h2><canvas id="branchChurn"></canvas></div></div>
+  <div class="col-lg-4"><div class="panel"><h2>Top churn reasons (SHAP)</h2><canvas id="reasons"></canvas></div></div>
+  <div class="col-lg-4"><div class="panel"><h2>Customer value distribution</h2><canvas id="valueDist"></canvas></div></div>
+  <div class="col-lg-4"><div class="panel"><h2>Customer segments</h2><canvas id="segments"></canvas></div></div>
+</div>
+{% endblock %}
+{% block scripts %}
+<script>
+const churnTrend = {{ churn_trend | tojson }};
+const shiftTrend = {{ shift_trend | tojson }};
+const riskDist = {{ risk_dist | tojson }};
+const branchChurn = {{ branch_churn | tojson }};
+const topReasons = {{ top_reasons | tojson }};
+const valueBins = {{ value_bins | tojson }};
+const segments = {{ segments | tojson }};
+</script>
+<script src="{{ url_for('static', filename='js/dashboard.js') }}"></script>
+{% endblock %}

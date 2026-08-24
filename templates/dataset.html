@@ -1,0 +1,51 @@
+{% extends "base.html" %}
+{% block title %}Dataset{% endblock %}
+{% block page_title %}Dataset management{% endblock %}
+{% block page_sub %}Built-in synthetic dataset, CSV upload, validation, and SQLite storage{% endblock %}
+{% block content %}
+<div class="kpi-grid">
+  <div class="kpi"><span>Customers</span><strong>{{ stats.customers }}</strong></div>
+  <div class="kpi"><span>Branches</span><strong>{{ stats.branches }}</strong></div>
+  <div class="kpi"><span>Transactions</span><strong>{{ stats.transactions }}</strong></div>
+  <div class="kpi"><span>Behaviour rows</span><strong>{{ stats.behaviour }}</strong></div>
+  <div class="kpi"><span>Engagement</span><strong>{{ stats.engagement }}</strong></div>
+  <div class="kpi"><span>Scored customers</span><strong>{{ stats.predictions }}</strong></div>
+</div>
+<div class="row g-3">
+  <div class="col-lg-5">
+    <div class="panel">
+      <h2>Load demo dataset</h2>
+      <p>Regenerates 6,500 synthetic customers, 80 branches, 12-month behaviour history, and 130,000 transactions, then retrains all models.</p>
+      <form method="post">
+        <input type="hidden" name="action" value="demo">
+        <button class="btn btn-primary">Load demo and retrain</button>
+      </form>
+    </div>
+  </div>
+  <div class="col-lg-7">
+    <div class="panel">
+      <h2>Upload CSV files</h2>
+      <p class="text-muted">Required: customers, branches, behaviour. Optional: engagement, transactions. Sensitive columns such as PIN, CVV, or card numbers are rejected.</p>
+      <form method="post" enctype="multipart/form-data">
+        <input type="hidden" name="action" value="upload">
+        <div class="mb-2"><label class="form-label">customers.csv</label><input class="form-control" type="file" name="customers_csv" accept=".csv" required></div>
+        <div class="mb-2"><label class="form-label">branches.csv</label><input class="form-control" type="file" name="branches_csv" accept=".csv" required></div>
+        <div class="mb-2"><label class="form-label">customer_behaviour.csv</label><input class="form-control" type="file" name="behaviour_csv" accept=".csv" required></div>
+        <div class="mb-2"><label class="form-label">customer_engagement.csv</label><input class="form-control" type="file" name="engagement_csv" accept=".csv"></div>
+        <div class="mb-2"><label class="form-label">transactions.csv</label><input class="form-control" type="file" name="transactions_csv" accept=".csv"></div>
+        <div class="form-check mb-3">
+          <input class="form-check-input" type="checkbox" name="retrain" id="retrain" checked>
+          <label class="form-check-label" for="retrain">Retrain ML models after ingest</label>
+        </div>
+        <button class="btn btn-dark">Validate and store in SQLite</button>
+      </form>
+    </div>
+  </div>
+</div>
+{% if report %}
+<div class="panel mt-3">
+  <h2>Validation report</h2>
+  <pre class="report-pre">{{ report | tojson(indent=2) }}</pre>
+</div>
+{% endif %}
+{% endblock %}

@@ -1,0 +1,115 @@
+{% extends "base.html" %}
+{% block title %}{{ c.full_name }}{% endblock %}
+{% block page_title %}{{ c.full_name }}{% endblock %}
+{% block page_sub %}{{ c.customer_id }} · {{ c.branch_name }} · {{ c.segment_name }}{% endblock %}
+{% block content %}
+<div class="kpi-grid">
+  <div class="kpi danger"><span>Churn probability</span><strong>{{ '%.1f'|format(c.probability*100) }}%</strong></div>
+  <div class="kpi"><span>Behaviour shift</span><strong>{{ c.shift_score }}</strong><div class="tiny">{{ c.classification }}</div></div>
+  <div class="kpi"><span>Anomaly score</span><strong>{{ c.anomaly_score }}</strong></div>
+  <div class="kpi gold"><span>Future value</span><strong>₹{{ '{:,.0f}'.format(c.predicted_future_value) }}</strong></div>
+  <div class="kpi warn"><span>Value at risk</span><strong>₹{{ '{:,.0f}'.format(c.value_at_risk) }}</strong></div>
+  <div class="kpi"><span>Risk level</span><strong>{{ c.risk_level }}</strong></div>
+</div>
+<div class="row g-3">
+  <div class="col-lg-4">
+    <div class="panel">
+      <h2>Profile</h2>
+      <ul class="kv">
+        <li><span>Age / Gender</span><b>{{ c.age }} · {{ c.gender }}</b></li>
+        <li><span>Occupation</span><b>{{ c.occupation }}</b></li>
+        <li><span>Account</span><b>{{ c.account_type }} · {{ c.masked_account }}</b></li>
+        <li><span>Tenure</span><b>{{ c.tenure_months }} months</b></li>
+        <li><span>Products</span><b>{{ c.products_count }}</b></li>
+        <li><span>Credit score</span><b>{{ c.credit_score }}</b></li>
+        <li><span>Satisfaction</span><b>{{ c.satisfaction_score }}</b></li>
+        <li><span>Complaints</span><b>{{ c.complaint_count }}</b></li>
+        <li><span>Last login</span><b>{{ c.last_login_days }} days</b></li>
+        <li><span>Observed churn</span><b>{{ 'Yes' if c.churn_label else 'No' }}</b></li>
+        <li><span>High value</span><b>{{ 'Yes' if c.is_high_value else 'No' }}</b></li>
+      </ul>
+    </div>
+  </div>
+  <div class="col-lg-8">
+    <div class="panel"><h2>Behaviour history</h2><canvas id="behChart"></canvas></div>
+  </div>
+  <div class="col-lg-6">
+    <div class="panel">
+      <h2>Cross-attribute deviations</h2>
+      <p class="text-muted">Deviating attributes: {{ deviating|join(', ') or 'None material' }}</p>
+      <table class="table table-sm">
+        <thead><tr><th>Attribute</th><th>Historical</th><th>Recent</th><th>Change</th></tr></thead>
+        <tbody>
+        {% for attr, d in details.items() %}
+          <tr>
+            <td>{{ attr }}</td>
+            <td>{{ d.historical }}</td>
+            <td>{{ d.recent }}</td>
+            <td>{{ '%.1f'|format(d.relative_change*100) }}%</td>
+          </tr>
+        {% endfor %}
+        </tbody>
+      </table>
+    </div>
+  </div>
+  <div class="col-lg-6">
+    <div class="panel">
+      <h2>SHAP churn explanation</h2>
+      <p class="text-muted">Model: {{ c.model_name }}. Positive impact raises churn probability.</p>
+      <canvas id="shapChart"></canvas>
+      <ul class="mt-3">
+        {% for item in shap_top %}
+          <li>{{ item.feature }}: {{ item.impact }} ({{ 'increases' if item.impact > 0 else 'decreases' }} churn risk)</li>
+        {% endfor %}
+      </ul>
+    </div>
+  </div>
+  <div class="col-lg-6">
+    <div class="panel">
+      <h2>Retention recommendation</h2>
+      <p><span class="pill high">{{ c.priority }}</span></p>
+      <h3>{{ c.strategy_title }}</h3>
+      <p>{{ c.rationale }}</p>
+      <ol>{% for a in actions %}<li>{{ a }}</li>{% endfor %}</ol>
+    </div>
+  </div>
+  <div class="col-lg-6">
+    <div class="panel table-wrap">
+      <h2>Recent transactions</h2>
+      <table class="table table-sm">
+        <thead><tr><th>Date</th><th>Type</th><th>Channel</th><th>Amount</th></tr></thead>
+        <tbody>
+        {% for t in txns %}
+          <tr><td>{{ t.txn_date }}</td><td>{{ t.txn_type }}</td><td>{{ t.channel }}</td><td>₹{{ '{:,.0f}'.format(t.amount) }}</td></tr>
+        {% endfor %}
+        </tbody>
+      </table>
+    </div>
+  </div>
+</div>
+{% endblock %}
+{% block scripts %}
+<script>
+const history = {{ history | tojson }};
+const shapTop = {{ shap_top | tojson }};
+new Chart(document.getElementById('behChart'), {
+  type: 'line',
+  data: {
+    labels: history.map(r => r.month_label),
+    datasets: [
+      {label:'Txn frequency', data: history.map(r => r.txn_frequency), borderColor:'#1b4f72', tension:.3},
+      {label:'Digital engagement', data: history.map(r => r.digital_engagement), borderColor:'#c9a227', tension:.3, yAxisID:'y1'}
+    ]
+  },
+  options: {responsive:true, scales:{y1:{position:'right', grid:{drawOnChartArea:false}}}}
+});
+new Chart(document.getElementById('shapChart'), {
+  type: 'bar',
+  data: {
+    labels: shapTop.map(s => s.feature),
+    datasets: [{label:'SHAP impact', data: shapTop.map(s => s.impact), backgroundColor: shapTop.map(s => s.impact>=0 ? '#c0392b' : '#1e8449')}]
+  },
+  options: {indexAxis:'y', responsive:true}
+});
+</script>
+{% endblock %}

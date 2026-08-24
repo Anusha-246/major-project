@@ -1,0 +1,41 @@
+{% extends "base.html" %}
+{% block title %}Model evaluation{% endblock %}
+{% block page_title %}ML model evaluation{% endblock %}
+{% block page_sub %}XGBoost vs Random Forest vs Logistic Regression · value regressor · K-Means{% endblock %}
+{% block content %}
+{% for m in metrics %}
+  <div class="panel mb-3">
+    <div class="d-flex justify-content-between">
+      <h2>{{ m.model_type }} · {{ m.model_name }}</h2>
+      {% if m.is_best %}<span class="pill high">Best in type</span>{% endif %}
+    </div>
+    <div class="row">
+      {% for k,v in m.metrics.items() %}
+        {% if k != 'confusion_matrix' and k != 'segments' %}
+        <div class="col-md-2"><div class="mini-stat"><span>{{ k }}</span><strong>{{ v }}</strong></div></div>
+        {% endif %}
+      {% endfor %}
+    </div>
+    {% if m.metrics.confusion_matrix %}
+      <p class="mt-2 mb-0">Confusion matrix — TN {{ m.metrics.confusion_matrix.tn }}, FP {{ m.metrics.confusion_matrix.fp }}, FN {{ m.metrics.confusion_matrix.fn }}, TP {{ m.metrics.confusion_matrix.tp }}</p>
+    {% endif %}
+  </div>
+{% endfor %}
+<div class="panel">
+  <h2>Global SHAP feature importance (XGBoost churn)</h2>
+  <p class="text-muted">Loaded from training artifacts. Individual explanations are on each customer page.</p>
+  <canvas id="shapGlobal" height="120"></canvas>
+</div>
+{% endblock %}
+{% block scripts %}
+<script>
+new Chart(document.getElementById('shapGlobal'), {
+  type: 'bar',
+  data: {
+    labels: {{ shap_labels | tojson }},
+    datasets: [{label: 'mean |SHAP|', data: {{ shap_values | tojson }}, backgroundColor: '#1b4f72'}]
+  },
+  options: {indexAxis: 'y', responsive: true}
+});
+</script>
+{% endblock %}

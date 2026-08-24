@@ -1,0 +1,23 @@
+{% extends "base.html" %}
+{% block title %}Retention{% endblock %}
+{% block page_title %}Retention strategies{% endblock %}
+{% block page_sub %}High-value and high-risk customers are prioritized{% endblock %}
+{% block content %}
+<div class="panel table-wrap">
+  <table class="table">
+    <thead><tr><th>Customer</th><th>Priority</th><th>Strategy</th><th>Churn</th><th>VaR</th><th>Rationale</th></tr></thead>
+    <tbody>
+    {% for r in rows %}
+      <tr>
+        <td><a href="{{ url_for('customers.detail', customer_id=r.customer_id) }}">{{ r.full_name }}</a></td>
+        <td>{{ r.priority }}</td>
+        <td>{{ r.strategy_title }}</td>
+        <td>{{ '%.0f'|format(r.probability*100) }}%</td>
+        <td>₹{{ '{:,.0f}'.format(r.value_at_risk) }}</td>
+        <td class="tiny">{{ r.rationale }}</td>
+      </tr>
+    {% endfor %}
+    </tbody>
+  </table>
+</div>
+{% endblock %}

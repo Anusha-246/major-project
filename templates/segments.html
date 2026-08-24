@@ -1,0 +1,22 @@
+{% extends "base.html" %}
+{% block title %}Segments{% endblock %}
+{% block page_title %}Customer segmentation{% endblock %}
+{% block page_sub %}K-Means clusters from activity, engagement, value, and behaviour shift{% endblock %}
+{% block content %}
+<div class="row g-3">
+  {% for s in segments %}
+  <div class="col-md-6 col-xl-4">
+    <div class="panel">
+      <h2>{{ s.segment_name }}</h2>
+      <ul class="kv">
+        <li><span>Customers</span><b>{{ s.customers }}</b></li>
+        <li><span>Avg churn</span><b>{{ '%.1f'|format((s.avg_churn or 0)*100) }}%</b></li>
+        <li><span>Avg shift</span><b>{{ '%.1f'|format(s.avg_shift or 0) }}</b></li>
+        <li><span>Avg future value</span><b>₹{{ '{:,.0f}'.format(s.avg_future_value or 0) }}</b></li>
+        <li><span>Value at risk</span><b>₹{{ '{:,.0f}'.format(s.value_at_risk or 0) }}</b></li>
+      </ul>
+    </div>
+  </div>
+  {% endfor %}
+</div>
+{% endblock %}

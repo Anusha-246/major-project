@@ -1,0 +1,44 @@
+{% extends "base.html" %}
+{% block title %}{{ branch.branch_name }}{% endblock %}
+{% block page_title %}{{ branch.branch_name }}{% endblock %}
+{% block page_sub %}{{ branch.city }} · {{ branch.region }} · Manager {{ branch.manager_name }}{% endblock %}
+{% block content %}
+<div class="kpi-grid">
+  <div class="kpi"><span>Customers</span><strong>{{ stats.total_customers }}</strong></div>
+  <div class="kpi danger"><span>Churn rate</span><strong>{{ '%.1f'|format((stats.churn_rate or 0)*100) }}%</strong></div>
+  <div class="kpi"><span>Predicted churners</span><strong>{{ stats.predicted_churners }}</strong></div>
+  <div class="kpi warn"><span>Critical shifts</span><strong>{{ stats.critical_shifts }}</strong></div>
+  <div class="kpi gold"><span>Value at risk</span><strong>₹{{ '{:,.0f}'.format(stats.value_at_risk or 0) }}</strong></div>
+</div>
+<div class="row g-3">
+  <div class="col-lg-8">
+    <div class="panel table-wrap">
+      <h2>Highest-risk customers</h2>
+      <table class="table table-sm">
+        <thead><tr><th>Customer</th><th>Churn</th><th>Risk</th><th>Shift</th><th>VaR</th></tr></thead>
+        <tbody>
+        {% for c in customers %}
+          <tr>
+            <td><a href="{{ url_for('customers.detail', customer_id=c.customer_id) }}">{{ c.full_name }}</a></td>
+            <td>{{ '%.0f'|format(c.probability*100) }}%</td>
+            <td>{{ c.risk_level }}</td>
+            <td>{{ c.shift_score }} · {{ c.classification }}</td>
+            <td>₹{{ '{:,.0f}'.format(c.value_at_risk) }}</td>
+          </tr>
+        {% endfor %}
+        </tbody>
+      </table>
+    </div>
+  </div>
+  <div class="col-lg-4">
+    <div class="panel">
+      <h2>Branch alerts</h2>
+      {% for a in alerts %}
+        <div class="alert-item"><strong>{{ a.alert_type }}</strong><p>{{ a.message }}</p></div>
+      {% else %}
+        <p class="text-muted">No branch-specific alerts.</p>
+      {% endfor %}
+    </div>
+  </div>
+</div>
+{% endblock %}
