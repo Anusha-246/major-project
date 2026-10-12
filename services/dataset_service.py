@@ -8,7 +8,7 @@ import pandas as pd
 from config import Config
 from database.db import get_connection, query_one
 from ml.train import load_core_frames, train_and_score
-from scripts.initialize import create_admin, load_frames, reset_database
+from scripts.initialize import load_frames, reset_database
 
 REQUIRED = {
     "customers": [

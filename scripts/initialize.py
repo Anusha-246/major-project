@@ -3,9 +3,9 @@ from __future__ import annotations
 
 import os
 import sqlite3
-from datetime import datetime
 
-from werkzeug.security import generate_password_hash
+
+
 
 from config import Config
 from database.db import get_connection, init_schema
@@ -20,18 +20,6 @@ def reset_database():
     conn = get_connection()
     init_schema(conn)
     conn.close()
-
-
-def create_admin(conn: sqlite3.Connection):
-    conn.execute(
-        "INSERT INTO users (username, password_hash, role, created_at) VALUES (?, ?, 'admin', ?)",
-        (
-            Config.ADMIN_USERNAME,
-            generate_password_hash(Config.ADMIN_PASSWORD),
-            datetime.utcnow().isoformat() + "Z",
-        ),
-    )
-
 
 def _insert_df(conn, table, df, columns):
     placeholders = ",".join(["?"] * len(columns))
@@ -124,7 +112,6 @@ def initialize_project(regenerate: bool = True):
     print("Creating SQLite database...")
     reset_database()
     conn = get_connection()
-    create_admin(conn)
     print("Generating synthetic banking data (demo only)...")
     frames = generate_all()
     print(

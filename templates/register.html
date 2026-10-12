@@ -1,0 +1,130 @@
+{% extends "base.html" %}
+{% block title %}Register Organization{% endblock %}
+
+{% block public %}
+<div class="login-wrap">
+  <div class="login-card">
+
+    <div class="brand mb-4">
+      <div class="brand-mark">BC</div>
+      <div>
+        <div class="brand-title text-dark">Behaviour Shift Intelligence</div>
+        <div class="text-muted">
+          Bank / Organization Registration
+        </div>
+      </div>
+    </div>
+
+    {% with messages = get_flashed_messages(with_categories=true) %}
+      {% if messages %}
+        {% for category, message in messages %}
+          <div class="alert alert-{{ category }}">
+            {{ message }}
+          </div>
+        {% endfor %}
+      {% endif %}
+    {% endwith %}
+
+    <form method="post">
+
+      <!-- Bank Details -->
+      <h6 class="mb-3 text-primary">Bank / Organization Details</h6>
+
+      <div class="mb-3">
+        <label class="form-label">Bank / Organization Name</label>
+        <input
+          class="form-control"
+          type="text"
+          name="bank_name"
+          placeholder="Enter bank or organization name"
+          required
+        >
+      </div>
+
+      <div class="mb-3">
+        <label class="form-label">Bank ID</label>
+        <input
+          class="form-control"
+          type="text"
+          name="bank_id"
+          placeholder="Enter unique bank ID"
+          required
+        >
+      </div>
+
+      <div class="mb-3">
+        <label class="form-label">Official Email</label>
+        <input
+          class="form-control"
+          type="email"
+          name="official_email"
+          placeholder="Enter official email"
+          required
+        >
+      </div>
+
+      <!-- Administrator Details -->
+      <h6 class="mb-3 mt-4 text-primary">Administrator Details</h6>
+
+      <div class="mb-3">
+        <label class="form-label">Administrator Name</label>
+        <input
+          class="form-control"
+          type="text"
+          name="admin_name"
+          placeholder="Enter administrator name"
+          required
+        >
+      </div>
+
+      <div class="mb-3">
+        <label class="form-label">Username</label>
+        <input
+          class="form-control"
+          type="text"
+          name="username"
+          placeholder="Create administrator username"
+          required
+        >
+      </div>
+
+      <div class="mb-3">
+        <label class="form-label">Password</label>
+        <input
+          class="form-control"
+          type="password"
+          name="password"
+          placeholder="Create password"
+          minlength="8"
+          required
+        >
+      </div>
+
+      <div class="mb-3">
+        <label class="form-label">Confirm Password</label>
+        <input
+          class="form-control"
+          type="password"
+          name="confirm_password"
+          placeholder="Confirm password"
+          minlength="8"
+          required
+        >
+      </div>
+
+      <button class="btn btn-primary w-100" type="submit">
+        Register Organization
+      </button>
+
+    </form>
+
+    <div class="text-center mt-4">
+      <span class="text-muted">Already registered?</span>
+      <a href="{{ url_for('auth.login') }}">
+        Administrator Login
+      </a>
+    </div>
+
+  </div>
+</div>
+{% endblock %}

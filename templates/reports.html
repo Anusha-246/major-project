@@ -1,8 +1,12 @@
 {% extends "base.html" %}
+
 {% block title %}Reports{% endblock %}
 {% block page_title %}Reports{% endblock %}
+
 {% block content %}
+
 <div class="panel filter-bar">
+
   {% set kinds = [
     ('churn','Churn Report'),
     ('behaviour','Behaviour Shift Report'),
@@ -12,21 +16,73 @@
     ('retention','Retention Strategy Report'),
     ('models','Model Evaluation Report')
   ] %}
-  {% for key,label in kinds %}
-    <a class="btn btn-sm {% if kind==key %}btn-primary{% else %}btn-outline-secondary{% endif %}" href="{{ url_for('reports.index', kind=key) }}">{{ label }}</a>
+
+  {% for key, label in kinds %}
+    <a
+      class="btn btn-sm {% if kind == key %}btn-primary{% else %}btn-outline-secondary{% endif %}"
+      href="{{ url_for('reports.index', kind=key) }}">
+      {{ label }}
+    </a>
   {% endfor %}
-  <a class="btn btn-sm btn-dark" href="{{ url_for('reports.export', kind=kind) }}">Export CSV</a>
+
+  <a
+    class="btn btn-sm btn-dark"
+    href="{{ url_for('reports.export', kind=kind) }}">
+    Export CSV
+  </a>
+
 </div>
+
 <div class="panel table-wrap">
+
   <h2>{{ report.title }}</h2>
-  <p class="text-muted">{{ report.summary }}</p>
-  <table class="table table-sm table-striped">
-    <thead><tr>{% for col in report.columns %}<th>{{ col }}</th>{% endfor %}</tr></thead>
-    <tbody>
-    {% for row in report.rows[:150] %}
-      <tr>{% for col in report.columns %}<td>{{ row[col] }}</td>{% endfor %}</tr>
-    {% endfor %}
-    </tbody>
-  </table>
+
+  <p class="text-muted">
+    {{ report.summary }}
+  </p>
+
+  {% if report.rows %}
+
+  <div style="overflow-x: auto;">
+
+    <table class="table table-sm table-striped">
+
+      <thead>
+        <tr>
+          {% for col in report.columns %}
+            <th>{{ col }}</th>
+          {% endfor %}
+        </tr>
+      </thead>
+
+      <tbody>
+
+        {% for row in report.rows[:150] %}
+
+        <tr>
+
+          {% for col in report.columns %}
+            <td>{{ row[col] }}</td>
+          {% endfor %}
+
+        </tr>
+
+        {% endfor %}
+
+      </tbody>
+
+    </table>
+
+  </div>
+
+  {% else %}
+
+    <div class="alert alert-warning">
+      No report data is available.
+    </div>
+
+  {% endif %}
+
 </div>
+
 {% endblock %}

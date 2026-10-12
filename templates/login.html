@@ -1,34 +1,70 @@
 {% extends "base.html" %}
-{% block title %}Administrator Login{% endblock %}
+{% block title %}Bank Administrator Login{% endblock %}
+
 {% block public %}
 <div class="login-wrap">
   <div class="login-card">
+
     <div class="brand mb-4">
       <div class="brand-mark">BC</div>
       <div>
         <div class="brand-title text-dark">Behaviour Shift Intelligence</div>
-        <div class="text-muted">Administrator access · synthetic banking demo</div>
+        <div class="text-muted">
+          Bank Administrator Access · Synthetic Banking Demo
+        </div>
       </div>
     </div>
+
     {% with messages = get_flashed_messages(with_categories=true) %}
       {% if messages %}
         {% for category, message in messages %}
-          <div class="alert alert-{{ category }}">{{ message }}</div>
+          <div class="alert alert-{{ category }}">
+            {{ message }}
+          </div>
         {% endfor %}
       {% endif %}
     {% endwith %}
+
     <form method="post">
+
       <div class="mb-3">
-        <label class="form-label">Username</label>
-        <input class="form-control" name="username" value="admin" required>
+        <label class="form-label">Administrator Username</label>
+        <input
+          class="form-control"
+          name="username"
+          placeholder="Enter administrator username"
+          required
+        >
       </div>
+
       <div class="mb-3">
         <label class="form-label">Password</label>
-        <input class="form-control" type="password" name="password" required>
+        <input
+          class="form-control"
+          type="password"
+          name="password"
+          placeholder="Enter password"
+          required
+        >
       </div>
-      <button class="btn btn-primary w-100">Sign in</button>
-      <p class="small text-muted mt-3 mb-0">Default demo login: <strong>admin</strong> / <strong>Admin@123</strong>. No real banking credentials are stored.</p>
+
+      <button class="btn btn-primary w-100" type="submit">
+        Sign in
+      </button>
+      <div class="text-end mt-2">
+  <a href="{{ url_for('auth.forgot_password') }}">
+    Forgot Password?
+  </a>
+</div>
     </form>
+
+    <div class="text-center mt-4">
+      <span class="text-muted">New bank or organization?</span>
+      <a href="{{ url_for('auth.register') }}">
+        Register Organization
+      </a>
+    </div>
+
   </div>
 </div>
 {% endblock %}

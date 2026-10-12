@@ -1,12 +1,36 @@
 PRAGMA foreign_keys = ON;
 
+-- =========================================================
+-- BANK / ORGANIZATION
+-- =========================================================
+
+CREATE TABLE IF NOT EXISTS banks (
+    id INTEGER PRIMARY KEY AUTOINCREMENT,
+    bank_name TEXT NOT NULL,
+    bank_id TEXT NOT NULL UNIQUE,
+    official_email TEXT NOT NULL UNIQUE,
+    status TEXT NOT NULL DEFAULT 'Approved',
+    created_at TEXT NOT NULL
+);
+
+-- =========================================================
+-- BANK ADMINISTRATOR
+-- =========================================================
+
 CREATE TABLE IF NOT EXISTS users (
     id INTEGER PRIMARY KEY AUTOINCREMENT,
+    bank_id INTEGER NOT NULL,
+    admin_name TEXT NOT NULL,
     username TEXT NOT NULL UNIQUE,
     password_hash TEXT NOT NULL,
     role TEXT NOT NULL DEFAULT 'admin',
-    created_at TEXT NOT NULL
+    created_at TEXT NOT NULL,
+    FOREIGN KEY (bank_id) REFERENCES banks(id)
 );
+
+-- =========================================================
+-- BRANCHES
+-- =========================================================
 
 CREATE TABLE IF NOT EXISTS branches (
     branch_id TEXT PRIMARY KEY,
@@ -17,6 +41,10 @@ CREATE TABLE IF NOT EXISTS branches (
     opened_year INTEGER NOT NULL,
     staff_count INTEGER NOT NULL
 );
+
+-- =========================================================
+-- CUSTOMERS
+-- =========================================================
 
 CREATE TABLE IF NOT EXISTS customers (
     customer_id TEXT PRIMARY KEY,
@@ -41,6 +69,10 @@ CREATE TABLE IF NOT EXISTS customers (
     FOREIGN KEY (branch_id) REFERENCES branches(branch_id)
 );
 
+-- =========================================================
+-- TRANSACTIONS
+-- =========================================================
+
 CREATE TABLE IF NOT EXISTS transactions (
     txn_id TEXT PRIMARY KEY,
     customer_id TEXT NOT NULL,
@@ -52,6 +84,10 @@ CREATE TABLE IF NOT EXISTS transactions (
     FOREIGN KEY (customer_id) REFERENCES customers(customer_id),
     FOREIGN KEY (branch_id) REFERENCES branches(branch_id)
 );
+
+-- =========================================================
+-- CUSTOMER BEHAVIOUR
+-- =========================================================
 
 CREATE TABLE IF NOT EXISTS customer_behaviour (
     id INTEGER PRIMARY KEY AUTOINCREMENT,
@@ -73,6 +109,10 @@ CREATE TABLE IF NOT EXISTS customer_behaviour (
     FOREIGN KEY (customer_id) REFERENCES customers(customer_id)
 );
 
+-- =========================================================
+-- CUSTOMER ENGAGEMENT
+-- =========================================================
+
 CREATE TABLE IF NOT EXISTS customer_engagement (
     customer_id TEXT PRIMARY KEY,
     mobile_logins INTEGER NOT NULL,
@@ -85,6 +125,10 @@ CREATE TABLE IF NOT EXISTS customer_engagement (
     FOREIGN KEY (customer_id) REFERENCES customers(customer_id)
 );
 
+-- =========================================================
+-- BEHAVIOUR DEVIATIONS
+-- =========================================================
+
 CREATE TABLE IF NOT EXISTS behaviour_deviations (
     customer_id TEXT PRIMARY KEY,
     shift_score REAL NOT NULL,
@@ -94,6 +138,10 @@ CREATE TABLE IF NOT EXISTS behaviour_deviations (
     attribute_details TEXT NOT NULL,
     FOREIGN KEY (customer_id) REFERENCES customers(customer_id)
 );
+
+-- =========================================================
+-- CHURN PREDICTIONS
+-- =========================================================
 
 CREATE TABLE IF NOT EXISTS churn_predictions (
     customer_id TEXT PRIMARY KEY,
@@ -105,6 +153,10 @@ CREATE TABLE IF NOT EXISTS churn_predictions (
     FOREIGN KEY (customer_id) REFERENCES customers(customer_id)
 );
 
+-- =========================================================
+-- CUSTOMER VALUE
+-- =========================================================
+
 CREATE TABLE IF NOT EXISTS customer_value (
     customer_id TEXT PRIMARY KEY,
     current_value REAL NOT NULL,
@@ -114,12 +166,20 @@ CREATE TABLE IF NOT EXISTS customer_value (
     FOREIGN KEY (customer_id) REFERENCES customers(customer_id)
 );
 
+-- =========================================================
+-- CUSTOMER SEGMENTS
+-- =========================================================
+
 CREATE TABLE IF NOT EXISTS customer_segments (
     customer_id TEXT PRIMARY KEY,
     segment_id INTEGER NOT NULL,
     segment_name TEXT NOT NULL,
     FOREIGN KEY (customer_id) REFERENCES customers(customer_id)
 );
+
+-- =========================================================
+-- RETENTION STRATEGIES
+-- =========================================================
 
 CREATE TABLE IF NOT EXISTS retention_strategies (
     customer_id TEXT PRIMARY KEY,
@@ -129,6 +189,10 @@ CREATE TABLE IF NOT EXISTS retention_strategies (
     rationale TEXT NOT NULL,
     FOREIGN KEY (customer_id) REFERENCES customers(customer_id)
 );
+
+-- =========================================================
+-- ALERTS
+-- =========================================================
 
 CREATE TABLE IF NOT EXISTS alerts (
     id INTEGER PRIMARY KEY AUTOINCREMENT,
@@ -141,6 +205,10 @@ CREATE TABLE IF NOT EXISTS alerts (
     is_read INTEGER NOT NULL DEFAULT 0
 );
 
+-- =========================================================
+-- MODEL METRICS
+-- =========================================================
+
 CREATE TABLE IF NOT EXISTS model_metrics (
     id INTEGER PRIMARY KEY AUTOINCREMENT,
     model_type TEXT NOT NULL,
@@ -150,7 +218,18 @@ CREATE TABLE IF NOT EXISTS model_metrics (
     created_at TEXT NOT NULL
 );
 
-CREATE INDEX IF NOT EXISTS idx_customers_branch ON customers(branch_id);
-CREATE INDEX IF NOT EXISTS idx_txn_customer ON transactions(customer_id);
-CREATE INDEX IF NOT EXISTS idx_beh_customer ON customer_behaviour(customer_id);
-CREATE INDEX IF NOT EXISTS idx_alerts_type ON alerts(alert_type);
+-- =========================================================
+-- INDEXES
+-- =========================================================
+
+CREATE INDEX IF NOT EXISTS idx_customers_branch
+ON customers(branch_id);
+
+CREATE INDEX IF NOT EXISTS idx_txn_customer
+ON transactions(customer_id);
+
+CREATE INDEX IF NOT EXISTS idx_beh_customer
+ON customer_behaviour(customer_id);
+
+CREATE INDEX IF NOT EXISTS idx_alerts_type
+ON alerts(alert_type);
