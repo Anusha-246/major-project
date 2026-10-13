@@ -9,3 +9,5 @@ joblib==1.4.2
 matplotlib==3.9.2
 gunicorn==22.0.0
 python-dotenv==1.0.1
+Flask-Mail
+python-dotenv
