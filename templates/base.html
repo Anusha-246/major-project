@@ -3,6 +3,7 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="theme-color" content="#102b46">
   <title>{% block title %}Banking Behaviour Intelligence{% endblock %}</title>
   <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
   <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css" rel="stylesheet">
@@ -14,41 +15,46 @@
 <div class="app-shell">
   <aside class="sidebar">
     <div class="brand">
-      <div class="brand-mark">BC</div>
+      <div class="brand-mark">BI</div>
       <div>
         <div class="brand-title">Behaviour Shift</div>
         <div class="brand-sub">Banking Intelligence</div>
       </div>
     </div>
-    <nav class="side-nav">
-      <a href="{{ url_for('dashboard.index') }}" class="{% if request.endpoint == 'dashboard.index' %}active{% endif %}"><i class="bi bi-grid-1x2"></i> Dashboard</a>
-      <a href="{{ url_for('customers.list_customers') }}" class="{% if request.endpoint and request.endpoint.startswith('customers') %}active{% endif %}"><i class="bi bi-people"></i> Customers</a>
-      <a href="{{ url_for('branches.list_branches') }}" class="{% if request.endpoint and request.endpoint.startswith('branches') %}active{% endif %}"><i class="bi bi-building"></i> Branches</a>
-      <a href="{{ url_for('segments.page') }}" class="{% if request.endpoint == 'segments.page' %}active{% endif %}"><i class="bi bi-diagram-3"></i> Segments</a>
-      <a href="{{ url_for('segments.retention') }}" class="{% if request.endpoint == 'segments.retention' %}active{% endif %}"><i class="bi bi-shield-check"></i> Retention</a>
-      <a href="{{ url_for('alerts.list_alerts') }}" class="{% if request.endpoint and request.endpoint.startswith('alerts') %}active{% endif %}"><i class="bi bi-bell"></i> Alerts</a>
-      <a href="{{ url_for('models.evaluation') }}" class="{% if request.endpoint == 'models.evaluation' %}active{% endif %}"><i class="bi bi-cpu"></i> Models</a>
-      <a href="{{ url_for('dataset.manage') }}" class="{% if request.endpoint == 'dataset.manage' %}active{% endif %}"><i class="bi bi-database"></i> Dataset</a>
-      <a href="{{ url_for('reports.index') }}" class="{% if request.endpoint and request.endpoint.startswith('reports') %}active{% endif %}"><i class="bi bi-file-earmark-bar-graph"></i> Reports</a>
-      <a href="{{ url_for('assistant.page') }}" class="{% if request.endpoint == 'assistant.page' %}active{% endif %}"><i class="bi bi-chat-dots"></i> AI Assistant</a>
+    <div class="nav-caption">Workspace</div>
+    <nav class="side-nav" aria-label="Main navigation">
+      <a href="{{ url_for('dashboard.index') }}" class="{% if request.endpoint == 'dashboard.index' %}active{% endif %}"><i class="bi bi-grid-1x2-fill"></i> Dashboard</a>
+      <a href="{{ url_for('customers.list_customers') }}" class="{% if request.endpoint and request.endpoint.startswith('customers') %}active{% endif %}"><i class="bi bi-people-fill"></i> Customers</a>
+      <a href="{{ url_for('branches.list_branches') }}" class="{% if request.endpoint and request.endpoint.startswith('branches') %}active{% endif %}"><i class="bi bi-buildings-fill"></i> Branch analytics</a>
+      <a href="{{ url_for('segments.page') }}" class="{% if request.endpoint == 'segments.page' %}active{% endif %}"><i class="bi bi-diagram-3-fill"></i> Segments</a>
+      <a href="{{ url_for('segments.retention') }}" class="{% if request.endpoint == 'segments.retention' %}active{% endif %}"><i class="bi bi-shield-check"></i> Retention plans</a>
+      <a href="{{ url_for('alerts.list_alerts') }}" class="{% if request.endpoint and request.endpoint.startswith('alerts') %}active{% endif %}"><i class="bi bi-bell-fill"></i> Risk alerts</a>
+      <div class="nav-caption">Intelligence</div>
+      <a href="{{ url_for('models.evaluation') }}" class="{% if request.endpoint == 'models.evaluation' %}active{% endif %}"><i class="bi bi-cpu-fill"></i> ML models</a>
+      <a href="{{ url_for('dataset.manage') }}" class="{% if request.endpoint == 'dataset.manage' %}active{% endif %}"><i class="bi bi-database-fill"></i> Dataset manager</a>
+      <a href="{{ url_for('reports.index') }}" class="{% if request.endpoint and request.endpoint.startswith('reports') %}active{% endif %}"><i class="bi bi-file-earmark-bar-graph-fill"></i> Reports</a>
+      <a href="{{ url_for('assistant.page') }}" class="{% if request.endpoint == 'assistant.page' %}active{% endif %}"><i class="bi bi-stars"></i> AI assistant</a>
     </nav>
     <div class="side-foot">
-      <div class="small text-white-50">Signed in as {{ session.username }}</div>
-      <a class="btn btn-sm btn-outline-light mt-2" href="{{ url_for('auth.logout') }}">Logout</a>
+      <div class="small"><i class="bi bi-person-check me-1"></i> Signed in as {{ session.username }}</div>
+      <a class="btn btn-sm w-100 mt-3" href="{{ url_for('auth.logout') }}"><i class="bi bi-box-arrow-left me-1"></i> Sign out</a>
     </div>
   </aside>
   <main class="main">
     <header class="topbar">
       <div>
         <h1>{% block page_title %}Overview{% endblock %}</h1>
-        <p class="text-muted mb-0">{% block page_sub %}Cross-attribute behaviour shift and churn intelligence{% endblock %}</p>
+        <p class="mb-0">{% block page_sub %}Cross-attribute behaviour shift and churn intelligence{% endblock %}</p>
       </div>
-      <span class="badge text-bg-dark">Synthetic demo data only</span>
+      <div class="topbar-right">
+        <span class="env-chip"><i class="bi bi-shield-lock-fill"></i> Synthetic demo data only</span>
+        <div class="user-chip"><span class="user-avatar">{{ (session.username or 'A')[:1]|upper }}</span><span>{{ session.username }}</span></div>
+      </div>
     </header>
     {% with messages = get_flashed_messages(with_categories=true) %}
       {% if messages %}
         {% for category, message in messages %}
-          <div class="alert alert-{{ category }}">{{ message }}</div>
+          <div class="alert alert-{{ category }} mb-3">{{ message }}</div>
         {% endfor %}
       {% endif %}
     {% endwith %}
