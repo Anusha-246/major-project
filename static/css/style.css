@@ -228,3 +228,17 @@ a:hover { color: var(--navy-2); }
   .auth-story-copy h1 { font-size: 1.8rem; }
   .user-chip { display: none; }
 }
+
+
+/* KPI icon overrides keep icon tiles distinct from their text labels. */
+.kpi .kpi-icon {
+  display: grid;
+  place-items: center;
+  color: var(--teal-strong);
+  font-size: 1.05rem;
+  font-weight: 400;
+  line-height: 1;
+}
+.kpi .kpi-icon.amber { color: #ad741e; }
+.kpi .kpi-icon.red { color: #bd4b4b; }
+.kpi .kpi-icon.blue { color: #326b9a; }
