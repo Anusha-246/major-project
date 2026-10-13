@@ -1,18 +1,17 @@
 from functools import wraps
 
-from itsdangerous import (
-    URLSafeTimedSerializer,
-    BadSignature,
-    SignatureExpired,
+from flask import (
+    Blueprint,
+    current_app,
+    flash,
+    redirect,
+    render_template,
+    request,
+    session,
+    url_for,
 )
-from flask import current_app
-from services.email_service import send_email
 
-
-
-from flask import Blueprint, flash, redirect, render_template, request, session, url_for
 from werkzeug.security import check_password_hash, generate_password_hash
-
 from database.db import query_one, execute
 
 auth_bp = Blueprint("auth", __name__)
@@ -31,96 +30,81 @@ def login_required(view):
     return wrapped
 
 
+
 @auth_bp.route("/register", methods=["GET", "POST"])
 def register():
     if request.method == "POST":
         bank_name = (request.form.get("bank_name") or "").strip()
         bank_id = (request.form.get("bank_id") or "").strip()
-        official_email = (request.form.get("official_email") or "").strip()
+        official_email = (
+            request.form.get("official_email") or ""
+        ).strip()
         admin_name = (request.form.get("admin_name") or "").strip()
         username = (request.form.get("username") or "").strip()
         password = request.form.get("password") or ""
         confirm_password = request.form.get("confirm_password") or ""
 
-        # Check required fields
         if not all([
-            bank_name,
-            bank_id,
-            official_email,
-            admin_name,
-            username,
-            password,
-            confirm_password
+            bank_name, bank_id, official_email,
+            admin_name, username, password, confirm_password
         ]):
             flash("Please fill in all fields.", "danger")
             return render_template("register.html")
 
-        # Check password
         if password != confirm_password:
             flash("Passwords do not match.", "danger")
             return render_template("register.html")
 
         if len(password) < 8:
-            flash("Password must contain at least 8 characters.", "danger")
+            flash(
+                "Password must contain at least 8 characters.",
+                "danger",
+            )
             return render_template("register.html")
 
-        # Check whether bank ID already exists
-        existing_bank = query_one(
-            "SELECT id FROM banks WHERE bank_id = ?",
-            (bank_id,)
-        )
-
-        if existing_bank:
+        if query_one(
+            "SELECT id FROM banks WHERE bank_id = ?", (bank_id,)
+        ):
             flash("Bank ID is already registered.", "danger")
             return render_template("register.html")
 
-        # Check official email
-        existing_email = query_one(
+        if query_one(
             "SELECT id FROM banks WHERE official_email = ?",
-            (official_email,)
-        )
-
-        if existing_email:
+            (official_email,),
+        ):
             flash("Official email is already registered.", "danger")
             return render_template("register.html")
 
-        # Check username
-        existing_user = query_one(
-            "SELECT id FROM users WHERE username = ?",
-            (username,)
-        )
-
-        if existing_user:
+        if query_one(
+            "SELECT id FROM users WHERE username = ?", (username,)
+        ):
             flash("Username is already taken.", "danger")
             return render_template("register.html")
 
         try:
-            # Create bank
+            from datetime import datetime, timezone
+
+            created_at = datetime.now(timezone.utc).isoformat()
+
             execute(
                 """
                 INSERT INTO banks
                 (bank_name, bank_id, official_email, status, created_at)
                 VALUES (?, ?, ?, 'Approved', ?)
                 """,
-                (
-                    bank_name,
-                    bank_id,
-                    official_email,
-                    __import__("datetime").datetime.utcnow().isoformat() + "Z"
-                )
+                (bank_name, bank_id, official_email, created_at),
             )
 
-            # Get newly created bank
             bank = query_one(
                 "SELECT id FROM banks WHERE bank_id = ?",
-                (bank_id,)
+                (bank_id,),
             )
 
-            # Create administrator account
             execute(
                 """
                 INSERT INTO users
-                (bank_id, admin_name, username, password_hash, role, created_at)
+                (bank_id, admin_name, username, password_hash,
+                 role, created_at)
                 VALUES (?, ?, ?, ?, 'admin', ?)
                 """,
                 (
@@ -128,17 +112,18 @@ def register():
                     admin_name,
                     username,
                     generate_password_hash(password),
-                    __import__("datetime").datetime.utcnow().isoformat() + "Z"
-                )
+                    created_at,
+                ),
             )
 
             flash(
-                "Bank registration successful. You can now sign in as administrator.",
-                "success"
+                "Bank registration successful. You can now sign in.",
+                "success",
             )
             return redirect(url_for("auth.login"))
 
         except Exception:
+            current_app.logger.exception("Bank registration failed")
             flash("Registration failed. Please try again.", "danger")
 
     return render_template("register.html")
@@ -193,10 +178,7 @@ def login():
 
     return render_template("login.html")
 
-def make_reset_serializer():
-    return URLSafeTimedSerializer(
-        current_app.config["SECRET_KEY"]
-    )
+
 
 
 @auth_bp.route("/forgot-password", methods=["GET", "POST"])
@@ -207,7 +189,7 @@ def forgot_password():
 
         user = query_one(
             """
-            SELECT users.id, users.admin_name, banks.official_email
+            SELECT users.id
             FROM users
             JOIN banks ON users.bank_id = banks.id
             WHERE users.username = ?
@@ -216,64 +198,30 @@ def forgot_password():
             (username, email),
         )
 
-        # Do not reveal whether an account exists.
-        if user:
-            token = make_reset_serializer().dumps(
-                {"user_id": user["id"]},
-                salt="banking-password-reset",
+        if not user:
+            flash(
+                "Username or official email is incorrect.",
+                "danger",
             )
+            return render_template("forgot_password.html")
 
-            reset_url = url_for(
-                "auth.reset_password",
-                token=token,
-                _external=True,
-            )
+        # No email is sent. Continue in the current browser session.
+        session["reset_user_id"] = user["id"]
 
-            sent = send_email(
-                user["official_email"],
-                "Password reset request",
-                (
-                    f"Hello {user['admin_name']},\n\n"
-                    "Use this link to reset your password. "
-                    "It expires in 30 minutes:\n\n"
-                    f"{reset_url}\n\n"
-                    "If you did not request this, ignore this email."
-                ),
-            )
-
-            if not sent:
-                current_app.logger.error(
-                    "Could not send password reset email."
-                )
-
-        flash(
-            "If the details match, a reset link will be sent to "
-            "the registered email address.",
-            "info",
-        )
-        return redirect(url_for("auth.login"))
+        return redirect(url_for("auth.reset_password"))
 
     return render_template("forgot_password.html")
 
 
-@auth_bp.route("/reset-password/<token>", methods=["GET", "POST"])
-def reset_password(token):
-    try:
-        data = make_reset_serializer().loads(
-            token,
-            salt="banking-password-reset",
-            max_age=current_app.config[
-                "PASSWORD_RESET_MAX_AGE_SECONDS"
-            ],
+@auth_bp.route("/reset-password", methods=["GET", "POST"])
+def reset_password():
+    user_id = session.get("reset_user_id")
+
+    if not user_id:
+        flash(
+            "Please verify your username and official email first.",
+            "warning",
         )
-        user_id = int(data["user_id"])
-
-    except SignatureExpired:
-        flash("The reset link has expired. Request a new one.", "warning")
-        return redirect(url_for("auth.forgot_password"))
-
-    except (BadSignature, KeyError, TypeError, ValueError):
-        flash("Invalid reset link. Request a new one.", "danger")
         return redirect(url_for("auth.forgot_password"))
 
     if request.method == "POST":
@@ -285,7 +233,10 @@ def reset_password(token):
             return render_template("reset_password.html")
 
         if len(password) < 8:
-            flash("Password must contain at least 8 characters.", "danger")
+            flash(
+                "Password must contain at least 8 characters.",
+                "danger",
+            )
             return render_template("reset_password.html")
 
         user = query_one(
@@ -294,7 +245,8 @@ def reset_password(token):
         )
 
         if not user:
-            flash("Account not found. Request a new reset link.", "danger")
+            session.pop("reset_user_id", None)
+            flash("Account not found.", "danger")
             return redirect(url_for("auth.forgot_password"))
 
         execute(
@@ -302,14 +254,15 @@ def reset_password(token):
             (generate_password_hash(password), user_id),
         )
 
+        session.pop("reset_user_id", None)
+
         flash(
-            "Password reset successful. Please sign in with your new password.",
+            "Password reset successful. Please sign in.",
             "success",
         )
         return redirect(url_for("auth.login"))
 
     return render_template("reset_password.html")
-
 
 @auth_bp.route("/logout")
 def logout():

@@ -1,19 +1,17 @@
 
 import os
-from dotenv import load_dotenv
 from flask import Flask
-
-load_dotenv()
-
 from config import Config
-from services.email_service import init_email
+
+app = Flask(__name__)
+app.config.from_object(Config)
 
 
 
 def create_app():
     app = Flask(__name__)
     app.config.from_object(Config)
-    init_email(app)
+
     os.makedirs(Config.MODEL_DIR, exist_ok=True)
     os.makedirs(Config.DATASET_DIR, exist_ok=True)
     os.makedirs(Config.UPLOAD_DIR, exist_ok=True)
