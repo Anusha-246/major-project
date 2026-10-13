@@ -1,25 +1,103 @@
 {% extends "base.html" %}
-{% block title %}Dashboard{% endblock %}
-{% block page_title %}Banking analytics dashboard{% endblock %}
+{% block title %}Banking Intelligence Overview{% endblock %}
+{% block page_title %}Portfolio overview{% endblock %}
+{% block page_sub %}A unified view of customer risk, behaviour shifts, and retention opportunities{% endblock %}
 {% block content %}
+<div class="dashboard-toolbar">
+  <div>
+    <div class="eyebrow"><i class="bi bi-activity me-1"></i> Portfolio intelligence</div>
+    <h2>Customer portfolio, at a glance</h2>
+    <p>Track the signals that may indicate disengagement before it becomes churn.</p>
+  </div>
+  <div class="dashboard-actions">
+    <a class="btn btn-outline-secondary" href="{{ url_for('customers.list_customers') }}"><i class="bi bi-people me-1"></i> Explore customers</a>
+    <a class="btn btn-primary" href="{{ url_for('reports.index') }}"><i class="bi bi-file-earmark-arrow-down me-1"></i> View reports</a>
+  </div>
+</div>
+
 <div class="kpi-grid">
-  <div class="kpi"><span>Total Customers</span><strong>{{ '{:,}'.format(kpis.total_customers or 0) }}</strong></div>
-  <div class="kpi warn"><span>At-Risk Customers</span><strong>{{ '{:,}'.format(kpis.at_risk or 0) }}</strong></div>
-  <div class="kpi danger"><span>Predicted Churners</span><strong>{{ '{:,}'.format(kpis.predicted_churners or 0) }}</strong></div>
-  <div class="kpi"><span>Behaviour Shifts</span><strong>{{ '{:,}'.format(kpis.behaviour_shifts or 0) }}</strong></div>
-  <div class="kpi danger"><span>Critical Customers</span><strong>{{ '{:,}'.format(kpis.critical_customers or 0) }}</strong></div>
-  <div class="kpi"><span>Avg Churn Probability</span><strong>{{ '%.1f'|format((kpis.avg_churn or 0)*100) }}%</strong></div>
-  <div class="kpi gold"><span>Customer Value at Risk</span><strong>₹{{ '{:,.0f}'.format(kpis.value_at_risk or 0) }}</strong></div>
+  <div class="kpi">
+    <div class="kpi-top"><span>Total customers</span><span class="kpi-icon blue"><i class="bi bi-people-fill"></i></span></div>
+    <strong>{{ '{:,}'.format(kpis.total_customers or 0) }}</strong>
+    <div class="tiny">Customers in the active dataset</div>
+  </div>
+  <div class="kpi warn">
+    <div class="kpi-top"><span>At-risk customers</span><span class="kpi-icon amber"><i class="bi bi-exclamation-triangle-fill"></i></span></div>
+    <strong>{{ '{:,}'.format(kpis.at_risk or 0) }}</strong>
+    <div class="tiny">Worth reviewing for retention</div>
+  </div>
+  <div class="kpi danger">
+    <div class="kpi-top"><span>Predicted churners</span><span class="kpi-icon red"><i class="bi bi-person-x-fill"></i></span></div>
+    <strong>{{ '{:,}'.format(kpis.predicted_churners or 0) }}</strong>
+    <div class="tiny">Flagged by the churn model</div>
+  </div>
+  <div class="kpi">
+    <div class="kpi-top"><span>Behaviour shifts</span><span class="kpi-icon"><i class="bi bi-arrow-left-right"></i></span></div>
+    <strong>{{ '{:,}'.format(kpis.behaviour_shifts or 0) }}</strong>
+    <div class="tiny">Activity deviations detected</div>
+  </div>
+  <div class="kpi danger">
+    <div class="kpi-top"><span>Critical customers</span><span class="kpi-icon red"><i class="bi bi-shield-exclamation"></i></span></div>
+    <strong>{{ '{:,}'.format(kpis.critical_customers or 0) }}</strong>
+    <div class="tiny">Highest-priority risk cases</div>
+  </div>
+  <div class="kpi">
+    <div class="kpi-top"><span>Average churn probability</span><span class="kpi-icon blue"><i class="bi bi-speedometer2"></i></span></div>
+    <strong>{{ '%.1f'|format((kpis.avg_churn or 0)*100) }}%</strong>
+    <div class="tiny">Average model-estimated probability</div>
+  </div>
+  <div class="kpi gold">
+    <div class="kpi-top"><span>Customer value at risk</span><span class="kpi-icon amber"><i class="bi bi-currency-rupee"></i></span></div>
+    <strong>₹{{ '{:,.0f}'.format(kpis.value_at_risk or 0) }}</strong>
+    <div class="tiny">Estimated value exposure</div>
+  </div>
 </div>
+
 <div class="row g-3 mt-1">
-  <div class="col-lg-8"><div class="panel"><h2>Churn trend</h2><canvas id="churnTrend"></canvas></div></div>
-  <div class="col-lg-4"><div class="panel"><h2>Risk distribution</h2><canvas id="riskDist"></canvas></div></div>
-  <div class="col-lg-6"><div class="panel"><h2>Behaviour shift classes</h2><canvas id="shiftTrend"></canvas></div></div>
-  <div class="col-lg-6"><div class="panel"><h2>Branch-wise churn</h2><canvas id="branchChurn"></canvas></div></div>
-  <div class="col-lg-4"><div class="panel"><h2>Top churn reasons (SHAP)</h2><canvas id="reasons"></canvas></div></div>
-  <div class="col-lg-4"><div class="panel"><h2>Customer value distribution</h2><canvas id="valueDist"></canvas></div></div>
-  <div class="col-lg-4"><div class="panel"><h2>Customer segments</h2><canvas id="segments"></canvas></div></div>
+  <div class="col-lg-8">
+    <div class="panel h-100">
+      <div class="panel-heading"><div><h2>Churn trend</h2><div class="panel-subtitle">Observed churn mix and average predicted probability</div></div><span class="panel-label">Trend analysis</span></div>
+      <div class="chart-area tall"><canvas id="churnTrend"></canvas></div>
+    </div>
+  </div>
+  <div class="col-lg-4">
+    <div class="panel h-100">
+      <div class="panel-heading"><div><h2>Risk distribution</h2><div class="panel-subtitle">Customers by risk level</div></div></div>
+      <div class="chart-area"><canvas id="riskDist"></canvas></div>
+    </div>
+  </div>
+  <div class="col-lg-6">
+    <div class="panel h-100">
+      <div class="panel-heading"><div><h2>Behaviour shift classes</h2><div class="panel-subtitle">How activity deviations are distributed</div></div></div>
+      <div class="chart-area"><canvas id="shiftTrend"></canvas></div>
+    </div>
+  </div>
+  <div class="col-lg-6">
+    <div class="panel h-100">
+      <div class="panel-heading"><div><h2>Branch-wise churn</h2><div class="panel-subtitle">Compare estimated churn across branches</div></div></div>
+      <div class="chart-area"><canvas id="branchChurn"></canvas></div>
+    </div>
+  </div>
+  <div class="col-lg-4">
+    <div class="panel h-100">
+      <div class="panel-heading"><div><h2>Top churn reasons</h2><div class="panel-subtitle">SHAP-based feature importance</div></div></div>
+      <div class="chart-area"><canvas id="reasons"></canvas></div>
+    </div>
+  </div>
+  <div class="col-lg-4">
+    <div class="panel h-100">
+      <div class="panel-heading"><div><h2>Customer value distribution</h2><div class="panel-subtitle">Customers grouped by future value</div></div></div>
+      <div class="chart-area"><canvas id="valueDist"></canvas></div>
+    </div>
+  </div>
+  <div class="col-lg-4">
+    <div class="panel h-100">
+      <div class="panel-heading"><div><h2>Customer segments</h2><div class="panel-subtitle">Portfolio mix by segment</div></div></div>
+      <div class="chart-area"><canvas id="segments"></canvas></div>
+    </div>
+  </div>
 </div>
+<div class="d-flex align-items-center gap-2 mt-3 text-muted small"><i class="bi bi-info-circle"></i> Interpret scores as model signals for review, not as a guarantee that a customer will leave.</div>
 {% endblock %}
 {% block scripts %}
 <script>
