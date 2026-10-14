@@ -1,64 +1,381 @@
 <!DOCTYPE html>
-<html lang="en">
+<html lang="en" data-theme="dark">
 <head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1">
-  <title>{% block title %}Banking Behaviour Intelligence{% endblock %}</title>
-  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
-  <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css" rel="stylesheet">
-  <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}">
-  <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.3/dist/chart.umd.min.js"></script>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <meta name="theme-color" content="#080f1d">
+
+    <title>{% block title %}Banking Behaviour Intelligence{% endblock %}</title>
+
+    <script>
+        (function () {
+            try {
+                const theme = localStorage.getItem("banking-dashboard-theme");
+
+                if (theme === "light" || theme === "dark") {
+                    document.documentElement.setAttribute("data-theme", theme);
+                    document.documentElement.style.colorScheme = theme;
+                }
+            } catch (error) {
+                // Use the default dark theme.
+            }
+        })();
+    </script>
+
+    <!-- Bootstrap -->
+    <link
+        href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css"
+        rel="stylesheet"
+    >
+
+    <!-- Bootstrap Icons -->
+    <link
+        href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css"
+        rel="stylesheet"
+    >
+
+    <!-- Application stylesheet -->
+    <link
+        rel="stylesheet"
+        href="{{ url_for('static', filename='css/style.css') }}"
+    >
+
+    <!-- Chart.js -->
+    <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.3/dist/chart.umd.min.js"></script>
+
+    {% block head %}{% endblock %}
 </head>
+
 <body>
+
 {% if session.get('user_id') %}
+
 <div class="app-shell">
-  <aside class="sidebar">
-    <div class="brand">
-      <div class="brand-mark">BC</div>
-      <div>
-        <div class="brand-title">Behaviour Shift</div>
-        <div class="brand-sub">Banking Intelligence</div>
-      </div>
-    </div>
-    <nav class="side-nav">
-      <a href="{{ url_for('dashboard.index') }}" class="{% if request.endpoint == 'dashboard.index' %}active{% endif %}"><i class="bi bi-grid-1x2"></i> Dashboard</a>
-      <a href="{{ url_for('customers.list_customers') }}" class="{% if request.endpoint and request.endpoint.startswith('customers') %}active{% endif %}"><i class="bi bi-people"></i> Customers</a>
-      <a href="{{ url_for('branches.list_branches') }}" class="{% if request.endpoint and request.endpoint.startswith('branches') %}active{% endif %}"><i class="bi bi-building"></i> Branches</a>
-      <a href="{{ url_for('segments.page') }}" class="{% if request.endpoint == 'segments.page' %}active{% endif %}"><i class="bi bi-diagram-3"></i> Segments</a>
-      <a href="{{ url_for('segments.retention') }}" class="{% if request.endpoint == 'segments.retention' %}active{% endif %}"><i class="bi bi-shield-check"></i> Retention</a>
-      <a href="{{ url_for('alerts.list_alerts') }}" class="{% if request.endpoint and request.endpoint.startswith('alerts') %}active{% endif %}"><i class="bi bi-bell"></i> Alerts</a>
-      <a href="{{ url_for('models.evaluation') }}" class="{% if request.endpoint == 'models.evaluation' %}active{% endif %}"><i class="bi bi-cpu"></i> Models</a>
-      <a href="{{ url_for('dataset.manage') }}" class="{% if request.endpoint == 'dataset.manage' %}active{% endif %}"><i class="bi bi-database"></i> Dataset</a>
-      <a href="{{ url_for('reports.index') }}" class="{% if request.endpoint and request.endpoint.startswith('reports') %}active{% endif %}"><i class="bi bi-file-earmark-bar-graph"></i> Reports</a>
-      <a href="{{ url_for('assistant.page') }}" class="{% if request.endpoint == 'assistant.page' %}active{% endif %}"><i class="bi bi-chat-dots"></i> AI Assistant</a>
-    </nav>
-    <div class="side-foot">
-      <div class="small text-white-50">Signed in as {{ session.username }}</div>
-      <a class="btn btn-sm btn-outline-light mt-2" href="{{ url_for('auth.logout') }}">Logout</a>
-    </div>
-  </aside>
-  <main class="main">
-    <header class="topbar">
-      <div>
-        <h1>{% block page_title %}Overview{% endblock %}</h1>
-        <p class="text-muted mb-0">{% block page_sub %}Cross-attribute behaviour shift and churn intelligence{% endblock %}</p>
-      </div>
-      <span class="badge text-bg-dark">Synthetic demo data only</span>
-    </header>
-    {% with messages = get_flashed_messages(with_categories=true) %}
-      {% if messages %}
-        {% for category, message in messages %}
-          <div class="alert alert-{{ category }}">{{ message }}</div>
-        {% endfor %}
-      {% endif %}
-    {% endwith %}
-    {% block content %}{% endblock %}
-  </main>
+
+    <!-- SIDEBAR -->
+    <aside class="sidebar">
+
+        <div class="brand">
+            <div class="brand-mark">BI</div>
+
+            <div>
+                <div class="brand-title">Behaviour Shift</div>
+                <div class="brand-sub">Banking Intelligence</div>
+            </div>
+        </div>
+
+        <div class="nav-caption">Workspace</div>
+
+        <nav class="side-nav" aria-label="Main navigation">
+
+            <a
+                href="{{ url_for('dashboard.index') }}"
+                class="{% if request.endpoint == 'dashboard.index' %}active{% endif %}"
+            >
+                <i class="bi bi-grid-1x2-fill"></i>
+                Dashboard
+            </a>
+
+            <a
+                href="{{ url_for('customers.list_customers') }}"
+                class="{% if request.endpoint and request.endpoint.startswith('customers') %}active{% endif %}"
+            >
+                <i class="bi bi-people-fill"></i>
+                Customers
+            </a>
+
+            <a
+                href="{{ url_for('branches.list_branches') }}"
+                class="{% if request.endpoint and request.endpoint.startswith('branches') %}active{% endif %}"
+            >
+                <i class="bi bi-buildings-fill"></i>
+                Branch Analytics
+            </a>
+
+            <a
+                href="{{ url_for('segments.page') }}"
+                class="{% if request.endpoint == 'segments.page' %}active{% endif %}"
+            >
+                <i class="bi bi-diagram-3-fill"></i>
+                Segments
+            </a>
+
+            <a
+                href="{{ url_for('segments.retention') }}"
+                class="{% if request.endpoint == 'segments.retention' %}active{% endif %}"
+            >
+                <i class="bi bi-shield-check"></i>
+                Retention Plans
+            </a>
+
+            <a
+                href="{{ url_for('alerts.list_alerts') }}"
+                class="{% if request.endpoint and request.endpoint.startswith('alerts') %}active{% endif %}"
+            >
+                <i class="bi bi-bell-fill"></i>
+                Risk Alerts
+            </a>
+
+            <div class="nav-caption">Intelligence</div>
+
+            <a
+                href="{{ url_for('models.evaluation') }}"
+                class="{% if request.endpoint == 'models.evaluation' %}active{% endif %}"
+            >
+                <i class="bi bi-cpu-fill"></i>
+                ML Models
+            </a>
+
+            <a
+                href="{{ url_for('dataset.manage') }}"
+                class="{% if request.endpoint == 'dataset.manage' %}active{% endif %}"
+            >
+                <i class="bi bi-database-fill"></i>
+                Dataset Manager
+            </a>
+
+            <a
+                href="{{ url_for('reports.index') }}"
+                class="{% if request.endpoint and request.endpoint.startswith('reports') %}active{% endif %}"
+            >
+                <i class="bi bi-file-earmark-bar-graph-fill"></i>
+                Reports
+            </a>
+
+            <a
+                href="{{ url_for('assistant.page') }}"
+                class="{% if request.endpoint == 'assistant.page' %}active{% endif %}"
+            >
+                <i class="bi bi-stars"></i>
+                AI Assistant
+            </a>
+
+        </nav>
+
+        <div class="side-foot">
+            <div class="small">
+                <i class="bi bi-person-check me-1"></i>
+                Signed in as {{ session.username }}
+            </div>
+
+            <a
+                class="btn btn-outline-secondary btn-sm mt-3"
+                href="{{ url_for('auth.logout') }}"
+            >
+                <i class="bi bi-box-arrow-left me-1"></i>
+                Sign Out
+            </a>
+        </div>
+
+    </aside>
+
+    <!-- MAIN CONTENT -->
+    <main class="main">
+
+        <header class="topbar">
+
+            <div class="topbar-heading">
+                <h1>{% block page_title %}Overview{% endblock %}</h1>
+
+                <p class="mb-0">
+                    {% block page_sub %}
+                        Cross-attribute behaviour shift and churn intelligence
+                    {% endblock %}
+                </p>
+            </div>
+
+            <div class="topbar-right">
+
+                <button
+                    type="button"
+                    id="themeToggle"
+                    class="theme-toggle"
+                    aria-label="Switch to light mode"
+                    title="Switch between light and dark mode"
+                >
+                    <i class="bi bi-sun-fill" id="themeToggleIcon"></i>
+                    <span id="themeToggleLabel">Light mode</span>
+                </button>
+
+                <span class="env-chip">
+                    <i class="bi bi-shield-lock-fill"></i>
+                    Synthetic Demo Data
+                </span>
+
+                <div class="user-chip">
+                    <span class="user-avatar">
+                        {{ (session.username or 'A')[:1]|upper }}
+                    </span>
+                    <span>{{ session.username }}</span>
+                </div>
+
+            </div>
+
+        </header>
+
+        <!-- FLASH MESSAGES -->
+        {% with messages = get_flashed_messages(with_categories=true) %}
+            {% if messages %}
+                {% for category, message in messages %}
+                    <div class="alert alert-{{ category }} mb-3" role="alert">
+                        {{ message }}
+                    </div>
+                {% endfor %}
+            {% endif %}
+        {% endwith %}
+
+        <!-- PAGE CONTENT -->
+        {% block content %}{% endblock %}
+
+    </main>
+
 </div>
+
 {% else %}
-  {% block public %}{% endblock %}
+
+    <!-- LOGIN, REGISTER AND PASSWORD-RESET PAGES -->
+    {% block public %}{% endblock %}
+
 {% endif %}
+
+<!-- Bootstrap JavaScript -->
 <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
+
+<!-- Page-specific scripts -->
 {% block scripts %}{% endblock %}
+
+<!-- Theme toggle -->
+<script>
+(function () {
+    const root = document.documentElement;
+    const button = document.getElementById("themeToggle");
+    const icon = document.getElementById("themeToggleIcon");
+    const label = document.getElementById("themeToggleLabel");
+
+    // Public authentication pages do not display this button.
+    if (!button || !icon || !label) {
+        return;
+    }
+
+    function updateCharts(isLight) {
+        if (typeof Chart === "undefined" || !Chart.instances) {
+            return;
+        }
+
+        const textColor = isLight ? "#40536B" : "#DCE8F8";
+        const mutedColor = isLight ? "#5C6F85" : "#A6B9D2";
+        const gridColor = isLight
+            ? "rgba(65, 91, 122, 0.12)"
+            : "rgba(169, 194, 225, 0.12)";
+        const panelColor = isLight ? "#FFFFFF" : "#111E32";
+
+        Object.values(Chart.instances).forEach(function (chart) {
+            if (!chart || !chart.options) {
+                return;
+            }
+
+            const plugins = chart.options.plugins || {};
+
+            if (plugins.legend && plugins.legend.labels) {
+                plugins.legend.labels.color = textColor;
+            }
+
+            if (plugins.tooltip) {
+                plugins.tooltip.backgroundColor =
+                    isLight ? "#FFFFFF" : "#071323";
+
+                plugins.tooltip.titleColor =
+                    isLight ? "#17263D" : "#FFFFFF";
+
+                plugins.tooltip.bodyColor = textColor;
+
+                plugins.tooltip.borderColor =
+                    isLight ? "#CBD7E5" : "rgba(56, 224, 194, 0.65)";
+            }
+
+            if (chart.options.scales) {
+                Object.values(chart.options.scales).forEach(function (axis) {
+                    if (axis.ticks) {
+                        axis.ticks.color = mutedColor;
+                    }
+
+                    if (axis.grid && axis.grid.display !== false) {
+                        axis.grid.color = gridColor;
+                    }
+                });
+            }
+
+            if (chart.data && chart.data.datasets) {
+                chart.data.datasets.forEach(function (dataset) {
+                    if (
+                        chart.config.type === "doughnut" ||
+                        chart.config.type === "pie"
+                    ) {
+                        dataset.borderColor = panelColor;
+                    }
+                });
+            }
+
+            chart.update("none");
+        });
+    }
+
+    function applyTheme(theme) {
+        const isLight = theme === "light";
+
+        root.setAttribute("data-theme", theme);
+        root.style.colorScheme = theme;
+
+        icon.className = isLight
+            ? "bi bi-moon-stars-fill"
+            : "bi bi-sun-fill";
+
+        label.textContent = isLight ? "Dark mode" : "Light mode";
+
+        button.setAttribute(
+            "aria-label",
+            isLight ? "Switch to dark mode" : "Switch to light mode"
+        );
+
+        updateCharts(isLight);
+    }
+
+    let savedTheme = "dark";
+
+    try {
+        const storedTheme = localStorage.getItem(
+            "banking-dashboard-theme"
+        );
+
+        if (storedTheme === "light" || storedTheme === "dark") {
+            savedTheme = storedTheme;
+        }
+    } catch (error) {
+        // Use dark mode if browser storage is unavailable.
+    }
+
+    applyTheme(savedTheme);
+
+    button.addEventListener("click", function () {
+        const currentTheme =
+            root.getAttribute("data-theme") || "dark";
+
+        const nextTheme =
+            currentTheme === "dark" ? "light" : "dark";
+
+        applyTheme(nextTheme);
+
+        try {
+            localStorage.setItem(
+                "banking-dashboard-theme",
+                nextTheme
+            );
+        } catch (error) {
+            // Theme switching still works for the current page.
+        }
+    });
+})();
+</script>
+
 </body>
 </html>

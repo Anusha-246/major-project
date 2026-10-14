@@ -1,64 +1,259 @@
+
 {% extends "base.html" %}
-{% block title %}Customers{% endblock %}
-{% block page_title %}Customer management{% endblock %}
-{% block page_sub %}Search, filter, and inspect behaviour shift, churn, value, and retention{% endblock %}
+
+{% block title %}Customers | Banking Intelligence{% endblock %}
+
+{% block page_title %}Customer Management{% endblock %}
+
+{% block page_sub %}
+Search and inspect customer behaviour shifts, churn risk, future value, and retention opportunities.
+{% endblock %}
+
 {% block content %}
-{% if error %}<div class="alert alert-warning">{{ error }}</div>{% endif %}
-<form class="filter-bar panel">
-  <input class="form-control" name="q" value="{{ q or '' }}" placeholder="Search ID, name, or city">
-  <select class="form-select" name="risk">
-    <option value="">All risk levels</option>
-    {% for r in ['Low','Medium','High','Critical'] %}
-      <option value="{{ r }}" {% if risk==r %}selected{% endif %}>{{ r }}</option>
-    {% endfor %}
-  </select>
-  <select class="form-select" name="shift">
-    <option value="">All shifts</option>
-    {% for r in ['Normal','Mild Shift','Significant Shift','Critical Shift'] %}
-      <option value="{{ r }}" {% if shift==r %}selected{% endif %}>{{ r }}</option>
-    {% endfor %}
-  </select>
-  <select class="form-select" name="segment">
-    <option value="">All segments</option>
-    {% for s in segments %}
-      <option value="{{ s.segment_name }}" {% if segment==s.segment_name %}selected{% endif %}>{{ s.segment_name }}</option>
-    {% endfor %}
-  </select>
-  <select class="form-select" name="sort">
-    <option value="churn_desc" {% if sort=='churn_desc' %}selected{% endif %}>Churn probability</option>
-    <option value="shift_desc" {% if sort=='shift_desc' %}selected{% endif %}>Behaviour shift</option>
-    <option value="value_desc" {% if sort=='value_desc' %}selected{% endif %}>Future value</option>
-    <option value="name" {% if sort=='name' %}selected{% endif %}>Name</option>
-  </select>
-  <button class="btn btn-primary">Apply</button>
-</form>
-<div class="panel table-wrap">
-  <table class="table table-hover align-middle">
-    <thead><tr>
-      <th>Customer</th><th>Branch</th><th>Churn</th><th>Risk</th><th>Shift</th><th>Segment</th><th>Future value</th><th>VaR</th>
-    </tr></thead>
-    <tbody>
-    {% for row in rows %}
-      <tr>
-        <td><a href="{{ url_for('customers.detail', customer_id=row.customer_id) }}">{{ row.full_name }}</a><div class="tiny">{{ row.customer_id }}</div></td>
-        <td>{{ row.branch_id }}<div class="tiny">{{ row.city }}</div></td>
-        <td>{{ '%.0f'|format(row.probability*100) }}%</td>
-        <td><span class="pill {{ row.risk_level|lower }}">{{ row.risk_level }}</span></td>
-        <td>{{ row.shift_score }}<div class="tiny">{{ row.classification }}</div></td>
-        <td>{{ row.segment_name }}</td>
-        <td>₹{{ '{:,.0f}'.format(row.predicted_future_value) }}</td>
-        <td>₹{{ '{:,.0f}'.format(row.value_at_risk) }}</td>
-      </tr>
-    {% endfor %}
-    </tbody>
-  </table>
-  <div class="d-flex justify-content-between">
-    <span class="text-muted">{{ total }} customers</span>
-    <div>
-      {% if page > 1 %}<a class="btn btn-sm btn-outline-secondary" href="?page={{ page-1 }}&q={{ q }}&risk={{ risk }}&shift={{ shift }}&segment={{ segment }}&sort={{ sort }}">Prev</a>{% endif %}
-      <span class="mx-2">Page {{ page }} / {{ pages }}</span>
-      {% if page < pages %}<a class="btn btn-sm btn-outline-secondary" href="?page={{ page+1 }}&q={{ q }}&risk={{ risk }}&shift={{ shift }}&segment={{ segment }}&sort={{ sort }}">Next</a>{% endif %}
-    </div>
-  </div>
+
+{% if error %}
+<div class="alert alert-warning" role="alert">
+    {{ error }}
 </div>
+{% endif %}
+
+<form
+    class="filter-bar panel"
+    method="get"
+    action="{{ url_for('customers.list_customers') }}"
+    aria-label="Customer filters"
+>
+    <div class="filter-field">
+        <label class="form-label" for="customer-search">
+            Search customers
+        </label>
+        <input
+            class="form-control"
+            id="customer-search"
+            name="q"
+            type="search"
+            value="{{ q or '' }}"
+            placeholder="Search ID, name, or city"
+        >
+    </div>
+
+    <div class="filter-field">
+        <label class="form-label" for="risk-filter">Risk level</label>
+        <select class="form-select" id="risk-filter" name="risk">
+            <option value="">All risk levels</option>
+            {% for r in ['Low', 'Medium', 'High', 'Critical'] %}
+            <option
+                value="{{ r }}"
+                {% if risk == r %}selected{% endif %}
+            >{{ r }}</option>
+            {% endfor %}
+        </select>
+    </div>
+
+    <div class="filter-field">
+        <label class="form-label" for="shift-filter">Behaviour shift</label>
+        <select class="form-select" id="shift-filter" name="shift">
+            <option value="">All shifts</option>
+            {% for r in ['Normal', 'Mild Shift', 'Significant Shift', 'Critical Shift'] %}
+            <option
+                value="{{ r }}"
+                {% if shift == r %}selected{% endif %}
+            >{{ r }}</option>
+            {% endfor %}
+        </select>
+    </div>
+
+    <div class="filter-field">
+        <label class="form-label" for="segment-filter">Segment</label>
+        <select class="form-select" id="segment-filter" name="segment">
+            <option value="">All segments</option>
+            {% for s in segments %}
+            <option
+                value="{{ s.segment_name }}"
+                {% if segment == s.segment_name %}selected{% endif %}
+            >{{ s.segment_name }}</option>
+            {% endfor %}
+        </select>
+    </div>
+
+    <div class="filter-field">
+        <label class="form-label" for="sort-filter">Sort by</label>
+        <select class="form-select" id="sort-filter" name="sort">
+            <option
+                value="churn_desc"
+                {% if sort == 'churn_desc' %}selected{% endif %}
+            >Churn probability</option>
+            <option
+                value="shift_desc"
+                {% if sort == 'shift_desc' %}selected{% endif %}
+            >Behaviour shift</option>
+            <option
+                value="value_desc"
+                {% if sort == 'value_desc' %}selected{% endif %}
+            >Future value</option>
+            <option
+                value="name"
+                {% if sort == 'name' %}selected{% endif %}
+            >Name</option>
+        </select>
+    </div>
+
+    <div class="filter-actions">
+        <button class="btn btn-primary" type="submit">
+            <i class="bi bi-funnel me-1"></i>
+            Apply Filters
+        </button>
+
+        <a
+            class="btn btn-outline-secondary"
+            href="{{ url_for('customers.list_customers') }}"
+        >
+            Reset
+        </a>
+    </div>
+</form>
+
+<div class="panel table-wrap">
+    <div class="d-flex justify-content-between align-items-center flex-wrap gap-2 mb-3">
+        <div>
+            <h2 class="section-heading mb-1">Customer Records</h2>
+            <p class="section-subtitle mb-0">
+                Customer risk and value indicators
+            </p>
+        </div>
+
+        <span class="env-chip">
+            <i class="bi bi-people-fill"></i>
+            {{ total }} customers
+        </span>
+    </div>
+
+    {% if rows %}
+    <div class="table-responsive">
+        <table class="table table-hover align-middle">
+            <thead>
+                <tr>
+                    <th>Customer</th>
+                    <th>Branch</th>
+                    <th>Churn Probability</th>
+                    <th>Risk</th>
+                    <th>Behaviour Shift</th>
+                    <th>Segment</th>
+                    <th>Future Value</th>
+                    <th>Value at Risk</th>
+                </tr>
+            </thead>
+
+            <tbody>
+                {% for row in rows %}
+                <tr>
+                    <td>
+                        <a href="{{ url_for('customers.detail', customer_id=row.customer_id) }}">
+                            {{ row.full_name }}
+                        </a>
+                        <div class="tiny text-muted">
+                            {{ row.customer_id }}
+                        </div>
+                    </td>
+
+                    <td>
+                        {{ row.branch_id }}
+                        <div class="tiny text-muted">
+                            {{ row.city }}
+                        </div>
+                    </td>
+
+                    <td>
+                        {{ '%.1f'|format(row.probability * 100) }}%
+                    </td>
+
+                    <td>
+                        {% set risk_class = row.risk_level|lower %}
+                        <span class="pill {{ risk_class }}">
+                            {{ row.risk_level }}
+                        </span>
+                    </td>
+
+                    <td>
+                        {{ row.shift_score }}
+                        <div class="tiny text-muted">
+                            {{ row.classification }}
+                        </div>
+                    </td>
+
+                    <td>{{ row.segment_name }}</td>
+
+                    <td>
+                        ₹{{ '{:,.0f}'.format(row.predicted_future_value) }}
+                    </td>
+
+                    <td>
+                        ₹{{ '{:,.0f}'.format(row.value_at_risk) }}
+                    </td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+
+    {% else %}
+    <div class="empty-state" role="status" aria-live="polite">
+        <i class="bi bi-search"></i>
+        <h3>No customers match these filters</h3>
+        <p>Try a broader search or reset the active filters.</p>
+
+        <a
+            class="btn btn-outline-secondary"
+            href="{{ url_for('customers.list_customers') }}"
+        >
+            Reset Filters
+        </a>
+    </div>
+    {% endif %}
+
+    <div class="d-flex justify-content-between align-items-center flex-wrap gap-2 mt-4">
+        <span class="text-muted">
+            Showing page {{ page }} of {{ pages }}
+        </span>
+
+        <nav class="pagination-controls" aria-label="Customer pagination">
+            {% if page > 1 %}
+            <a
+                class="btn btn-sm btn-outline-secondary"
+                href="{{ url_for(
+                    'customers.list_customers',
+                    page=page-1,
+                    q=q,
+                    risk=risk,
+                    shift=shift,
+                    segment=segment,
+                    sort=sort
+                ) }}"
+            >
+                <i class="bi bi-chevron-left me-1"></i>
+                Previous
+            </a>
+            {% endif %}
+
+            {% if page < pages %}
+            <a
+                class="btn btn-sm btn-outline-secondary"
+                href="{{ url_for(
+                    'customers.list_customers',
+                    page=page+1,
+                    q=q,
+                    risk=risk,
+                    shift=shift,
+                    segment=segment,
+                    sort=sort
+                ) }}"
+            >
+                Next
+                <i class="bi bi-chevron-right ms-1"></i>
+            </a>
+            {% endif %}
+        </nav>
+    </div>
+</div>
+
 {% endblock %}

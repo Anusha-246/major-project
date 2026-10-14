@@ -1,70 +1,159 @@
+
 {% extends "base.html" %}
-{% block title %}Bank Administrator Login{% endblock %}
+
+{% block title %}Administrator Login | Behaviour Shift Intelligence{% endblock %}
 
 {% block public %}
-<div class="login-wrap">
-  <div class="login-card">
 
-    <div class="brand mb-4">
-      <div class="brand-mark">BC</div>
+<div class="auth-shell">
+
+  <section class="auth-story">
+
+    <div class="brand">
+      <div class="brand-mark">BI</div>
+
       <div>
-        <div class="brand-title text-dark">Behaviour Shift Intelligence</div>
-        <div class="text-muted">
-          Bank Administrator Access · Synthetic Banking Demo
+        <div class="brand-title">Behaviour Shift</div>
+        <div class="brand-sub">Banking Intelligence Platform</div>
+      </div>
+    </div>
+
+    <div class="auth-story-copy">
+
+      <div class="eyebrow">
+        <i class="bi bi-shield-check me-1"></i>
+        Banking Intelligence
+      </div>
+
+      <h1>See the signals behind customer behaviour.</h1>
+
+      <p>
+        Bring churn risk, activity shifts, customer value, and
+        retention insights together in one clear workspace.
+      </p>
+
+      <div class="auth-features">
+
+        <div class="auth-feature">
+          <i class="bi bi-graph-up-arrow"></i>
+          <span>Behaviour shift insights</span>
         </div>
+
+        <div class="auth-feature">
+          <i class="bi bi-people"></i>
+          <span>Customer risk profiles</span>
+        </div>
+
+        <div class="auth-feature">
+          <i class="bi bi-diagram-3"></i>
+          <span>Branch and segment analytics</span>
+        </div>
+
+        <div class="auth-feature">
+          <i class="bi bi-shield-check"></i>
+          <span>Retention prioritization</span>
+        </div>
+
       </div>
     </div>
 
-    {% with messages = get_flashed_messages(with_categories=true) %}
-      {% if messages %}
-        {% for category, message in messages %}
-          <div class="alert alert-{{ category }}">
-            {{ message }}
-          </div>
-        {% endfor %}
-      {% endif %}
-    {% endwith %}
-
-    <form method="post">
-
-      <div class="mb-3">
-        <label class="form-label">Administrator Username</label>
-        <input
-          class="form-control"
-          name="username"
-          placeholder="Enter administrator username"
-          required
-        >
-      </div>
-
-      <div class="mb-3">
-        <label class="form-label">Password</label>
-        <input
-          class="form-control"
-          type="password"
-          name="password"
-          placeholder="Enter password"
-          required
-        >
-      </div>
-
-      <button class="btn btn-primary w-100" type="submit">
-        Sign in
-      </button>
-      <div class="text-end mt-2">
-  <a href="{{ url_for('auth.forgot_password') }}">
-    Forgot Password?
-  </a>
-</div>
-    </form>
-
-    <div class="text-center mt-4">
-      <span class="text-muted">New bank or organization?</span>
-      <a href="{{ url_for('auth.register') }}">
-        Register Organization
-      </a>
+    <div class="auth-story-foot">
+      Academic project · Synthetic banking demo data
     </div>
 
-  </div>
+  </section>
+
+  <section class="auth-side">
+
+    <div class="auth-card">
+
+      <div class="mb-4">
+        <div class="text-uppercase fw-bold mb-2"
+             style="font-size:11px;letter-spacing:2px;color:#108a7b;">
+          Welcome Back
+        </div>
+
+        <h2>Sign in to your workspace</h2>
+
+        <p class="auth-intro">
+          Enter your administrator credentials to continue.
+        </p>
+      </div>
+
+      {% with messages = get_flashed_messages(with_categories=true) %}
+        {% if messages %}
+          {% for category, message in messages %}
+            <div class="alert alert-{{ category }}">
+              {{ message }}
+            </div>
+          {% endfor %}
+        {% endif %}
+      {% endwith %}
+
+      <form method="post">
+
+        <div class="mb-3">
+          <label class="form-label" for="username">
+            Administrator Username
+          </label>
+
+          <input
+            class="form-control"
+            id="username"
+            name="username"
+            autocomplete="username"
+            placeholder="Enter your username"
+            required
+          >
+        </div>
+
+        <div class="mb-2">
+          <label class="form-label" for="password">
+            Password
+          </label>
+
+          <input
+            class="form-control"
+            id="password"
+            type="password"
+            name="password"
+            autocomplete="current-password"
+            placeholder="Enter your password"
+            required
+          >
+        </div>
+
+        <div class="text-end mb-4">
+          <a href="{{ url_for('auth.forgot_password') }}"
+             class="small">
+            Forgot Password?
+          </a>
+        </div>
+
+        <button class="btn btn-primary w-100" type="submit">
+          <i class="bi bi-box-arrow-in-right me-2"></i>
+          Sign In Securely
+        </button>
+
+      </form>
+
+      <div class="auth-divider"></div>
+
+      <div class="text-center small">
+        <span class="text-muted">New bank or organization?</span>
+        <br>
+
+        <a class="d-inline-block mt-2"
+           href="{{ url_for('auth.register') }}">
+          Register Organization
+          <i class="bi bi-arrow-right ms-1"></i>
+        </a>
+      </div>
+
+    </div>
+
+  </section>
+
 </div>
+
 {% endblock %}

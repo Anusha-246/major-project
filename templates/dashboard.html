@@ -1,35 +1,830 @@
+
 {% extends "base.html" %}
-{% block title %}Dashboard{% endblock %}
-{% block page_title %}Banking analytics dashboard{% endblock %}
+
+{% block title %}Analytics Dashboard{% endblock %}
+{% block page_title %}Banking Analytics Dashboard{% endblock %}
+
+{% block page_sub %}
+Monitor customer churn, behaviour shifts, risk exposure and future customer value.
+{% endblock %}
+
+{% block head %}
+<style>
+.dashboard-page {
+    width: 100%;
+    min-width: 0;
+}
+
+.dashboard-intro {
+    margin-bottom: 24px;
+}
+
+.dashboard-intro h2 {
+    font-size: 1.5rem;
+    font-weight: 750;
+    margin: 0 0 8px;
+    letter-spacing: -.5px;
+}
+
+.dashboard-intro p {
+    margin: 0;
+    opacity: .8;
+    font-size: .94rem;
+}
+
+.dashboard-kpi-grid {
+    display: grid;
+    grid-template-columns: repeat(4, minmax(0, 1fr));
+    gap: 16px;
+    margin-bottom: 24px;
+}
+
+.dashboard-kpi {
+    min-width: 0;
+    padding: 21px;
+    border: 1px solid #e2e8f0;
+    border-radius: 16px;
+    background: #fff !important;
+    color: #1e293b !important;
+    box-shadow: 0 5px 20px rgba(0,0,0,.06);
+    transition: transform .2s ease, box-shadow .2s ease;
+}
+
+.dashboard-kpi:hover {
+    transform: translateY(-3px);
+    box-shadow: 0 10px 26px rgba(0,0,0,.12);
+}
+
+.kpi-top {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 10px;
+    margin-bottom: 17px;
+}
+
+.kpi-label {
+    font-size: .83rem;
+    font-weight: 650;
+    line-height: 1.5;
+    color: #475569 !important;
+    opacity: 1 !important;
+}
+
+.kpi-icon {
+    width: 42px;
+    height: 42px;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    flex-shrink: 0;
+    border-radius: 12px;
+    font-size: 1.2rem;
+}
+
+.kpi-blue { background: rgba(59,130,246,.15); color: #2563eb; }
+.kpi-red { background: rgba(239,68,68,.15); color: #dc2626; }
+.kpi-orange { background: rgba(249,115,22,.15); color: #ea580c; }
+.kpi-purple { background: rgba(168,85,247,.15); color: #9333ea; }
+.kpi-yellow { background: rgba(234,179,8,.18); color: #a16207; }
+.kpi-green { background: rgba(34,197,94,.15); color: #16a34a; }
+.kpi-cyan { background: rgba(6,182,212,.15); color: #0891b2; }
+
+.kpi-value {
+    font-size: clamp(1.4rem, 2vw, 2rem);
+    font-weight: 800;
+    letter-spacing: -1px;
+    line-height: 1.25;
+    overflow-wrap: anywhere;
+    font-variant-numeric: tabular-nums;
+    color: #0f172a !important;
+    opacity: 1 !important;
+}
+
+.kpi-caption {
+    font-size: .77rem;
+    margin-top: 9px;
+    color: #64748b !important;
+    opacity: 1 !important;
+}
+
+.dashboard-section-heading {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    flex-wrap: wrap;
+    gap: 10px;
+    margin: 28px 0 15px;
+}
+
+.dashboard-section-heading h3 {
+    font-size: 1.05rem;
+    font-weight: 750;
+    margin: 0;
+}
+
+.dashboard-section-heading p {
+    font-size: .8rem;
+    opacity: .8;
+    margin: 5px 0 0;
+}
+
+.dashboard-chart-grid {
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 18px;
+}
+
+.chart-panel {
+    min-width: 0;
+    padding: 20px;
+    border: 1px solid #e2e8f0;
+    border-radius: 16px;
+    background: #fff !important;
+    color: #1e293b !important;
+    box-shadow: 0 5px 20px rgba(0,0,0,.06);
+}
+
+.chart-panel-wide {
+    grid-column: 1 / -1;
+}
+
+.chart-panel-header {
+    margin-bottom: 18px;
+}
+
+.chart-panel-header h4 {
+    font-size: .96rem;
+    font-weight: 750;
+    margin: 0 0 6px;
+    color: #0f172a !important;
+    opacity: 1 !important;
+}
+
+.chart-panel-header p {
+    font-size: .79rem;
+    margin: 0;
+    line-height: 1.5;
+    color: #64748b !important;
+    opacity: 1 !important;
+}
+
+.chart-container {
+    position: relative;
+    height: 285px;
+    width: 100%;
+    min-width: 0;
+}
+
+.chart-container.chart-short {
+    height: 250px;
+}
+
+.dashboard-note {
+    display: flex;
+    gap: 10px;
+    align-items: flex-start;
+    padding: 15px 17px;
+    border-radius: 12px;
+    margin-top: 22px;
+    background: rgba(59,130,246,.08);
+    border: 1px solid rgba(59,130,246,.18);
+    font-size: .83rem;
+    line-height: 1.6;
+}
+
+.dashboard-note i {
+    color: #60a5fa;
+    font-size: 1.05rem;
+    margin-top: 2px;
+}
+
+@media (max-width: 1100px) {
+    .dashboard-kpi-grid {
+        grid-template-columns: repeat(2, minmax(0, 1fr));
+    }
+}
+
+@media (max-width: 700px) {
+    .dashboard-chart-grid {
+        grid-template-columns: minmax(0, 1fr);
+    }
+
+    .chart-panel-wide {
+        grid-column: auto;
+    }
+
+    .chart-panel {
+        padding: 15px;
+    }
+
+    .chart-container {
+        height: 250px;
+    }
+}
+
+@media (max-width: 420px) {
+    .dashboard-kpi-grid {
+        grid-template-columns: minmax(0, 1fr);
+    }
+}
+</style>
+{% endblock %}
+
 {% block content %}
-<div class="kpi-grid">
-  <div class="kpi"><span>Total Customers</span><strong>{{ '{:,}'.format(kpis.total_customers or 0) }}</strong></div>
-  <div class="kpi warn"><span>At-Risk Customers</span><strong>{{ '{:,}'.format(kpis.at_risk or 0) }}</strong></div>
-  <div class="kpi danger"><span>Predicted Churners</span><strong>{{ '{:,}'.format(kpis.predicted_churners or 0) }}</strong></div>
-  <div class="kpi"><span>Behaviour Shifts</span><strong>{{ '{:,}'.format(kpis.behaviour_shifts or 0) }}</strong></div>
-  <div class="kpi danger"><span>Critical Customers</span><strong>{{ '{:,}'.format(kpis.critical_customers or 0) }}</strong></div>
-  <div class="kpi"><span>Avg Churn Probability</span><strong>{{ '%.1f'|format((kpis.avg_churn or 0)*100) }}%</strong></div>
-  <div class="kpi gold"><span>Customer Value at Risk</span><strong>₹{{ '{:,.0f}'.format(kpis.value_at_risk or 0) }}</strong></div>
-</div>
-<div class="row g-3 mt-1">
-  <div class="col-lg-8"><div class="panel"><h2>Churn trend</h2><canvas id="churnTrend"></canvas></div></div>
-  <div class="col-lg-4"><div class="panel"><h2>Risk distribution</h2><canvas id="riskDist"></canvas></div></div>
-  <div class="col-lg-6"><div class="panel"><h2>Behaviour shift classes</h2><canvas id="shiftTrend"></canvas></div></div>
-  <div class="col-lg-6"><div class="panel"><h2>Branch-wise churn</h2><canvas id="branchChurn"></canvas></div></div>
-  <div class="col-lg-4"><div class="panel"><h2>Top churn reasons (SHAP)</h2><canvas id="reasons"></canvas></div></div>
-  <div class="col-lg-4"><div class="panel"><h2>Customer value distribution</h2><canvas id="valueDist"></canvas></div></div>
-  <div class="col-lg-4"><div class="panel"><h2>Customer segments</h2><canvas id="segments"></canvas></div></div>
+<div class="dashboard-page">
+
+    <div class="dashboard-intro">
+        <h2>Customer Intelligence Overview</h2>
+        <p>
+            Understand customer behaviour, identify churn risks and discover
+            opportunities for customer retention.
+        </p>
+    </div>
+
+    <!-- KPI CARDS -->
+    <div class="dashboard-kpi-grid">
+
+        <div class="dashboard-kpi">
+            <div class="kpi-top">
+                <span class="kpi-label">Total Customers</span>
+                <span class="kpi-icon kpi-blue">
+                    <i class="bi bi-people-fill"></i>
+                </span>
+            </div>
+            <div class="kpi-value">
+                {{ "{:,}".format(kpis.total_customers or 0) }}
+            </div>
+            <div class="kpi-caption">Customers in the database</div>
+        </div>
+
+        <div class="dashboard-kpi">
+            <div class="kpi-top">
+                <span class="kpi-label">High / Critical Risk</span>
+                <span class="kpi-icon kpi-red">
+                    <i class="bi bi-shield-exclamation"></i>
+                </span>
+            </div>
+            <div class="kpi-value">
+                {{ "{:,}".format(kpis.at_risk or 0) }}
+            </div>
+            <div class="kpi-caption">Customers needing attention</div>
+        </div>
+
+        <div class="dashboard-kpi">
+            <div class="kpi-top">
+                <span class="kpi-label">Predicted Churners</span>
+                <span class="kpi-icon kpi-orange">
+                    <i class="bi bi-person-dash-fill"></i>
+                </span>
+            </div>
+            <div class="kpi-value">
+                {{ "{:,}".format(kpis.predicted_churners or 0) }}
+            </div>
+            <div class="kpi-caption">Customers predicted to churn</div>
+        </div>
+
+        <div class="dashboard-kpi">
+            <div class="kpi-top">
+                <span class="kpi-label">Behaviour Shifts</span>
+                <span class="kpi-icon kpi-purple">
+                    <i class="bi bi-activity"></i>
+                </span>
+            </div>
+            <div class="kpi-value">
+                {{ "{:,}".format(kpis.behaviour_shifts or 0) }}
+            </div>
+            <div class="kpi-caption">Non-normal behaviour deviations</div>
+        </div>
+
+        <div class="dashboard-kpi">
+            <div class="kpi-top">
+                <span class="kpi-label">Critical Shifts</span>
+                <span class="kpi-icon kpi-yellow">
+                    <i class="bi bi-exclamation-triangle-fill"></i>
+                </span>
+            </div>
+            <div class="kpi-value">
+                {{ "{:,}".format(kpis.critical_customers or 0) }}
+            </div>
+            <div class="kpi-caption">Customers with critical deviations</div>
+        </div>
+
+        <div class="dashboard-kpi">
+            <div class="kpi-top">
+                <span class="kpi-label">Average Churn Probability</span>
+                <span class="kpi-icon kpi-cyan">
+                    <i class="bi bi-percent"></i>
+                </span>
+            </div>
+            <div class="kpi-value">
+                {{ "%.1f"|format((kpis.avg_churn or 0) * 100) }}%
+            </div>
+            <div class="kpi-caption">Mean predicted churn probability</div>
+        </div>
+
+        <div class="dashboard-kpi">
+            <div class="kpi-top">
+                <span class="kpi-label">Customer Value at Risk</span>
+                <span class="kpi-icon kpi-green">
+                    <i class="bi bi-currency-rupee"></i>
+                </span>
+            </div>
+            <div class="kpi-value">
+                ₹{{ "{:,.0f}".format(kpis.value_at_risk or 0) }}
+            </div>
+            <div class="kpi-caption">Combined value at risk</div>
+        </div>
+
+    </div>
+
+    <!-- CHURN ANALYTICS -->
+    <div class="dashboard-section-heading">
+        <div>
+            <h3>Churn Analytics</h3>
+            <p>Compare observed churn and model predictions.</p>
+        </div>
+    </div>
+
+    <div class="dashboard-chart-grid">
+
+        <div class="chart-panel chart-panel-wide">
+            <div class="chart-panel-header">
+                <h4>Observed vs Predicted Churn</h4>
+                <p>Monthly comparison of actual churn labels and average model probabilities.</p>
+            </div>
+            <div class="chart-container">
+                <canvas id="churnTrend"></canvas>
+            </div>
+        </div>
+
+        <div class="chart-panel">
+            <div class="chart-panel-header">
+                <h4>Customer Risk Distribution</h4>
+                <p>Number of customers in each risk category.</p>
+            </div>
+            <div class="chart-container chart-short">
+                <canvas id="riskDist"></canvas>
+            </div>
+        </div>
+
+        <div class="chart-panel">
+            <div class="chart-panel-header">
+                <h4>Behaviour Shift Distribution</h4>
+                <p>Customer counts grouped by behaviour classification.</p>
+            </div>
+            <div class="chart-container chart-short">
+                <canvas id="shiftTrend"></canvas>
+            </div>
+        </div>
+
+        <div class="chart-panel chart-panel-wide">
+            <div class="chart-panel-header">
+                <h4>Branch Churn Analysis</h4>
+                <p>Compare observed churn rate with predicted churn probability for each branch.</p>
+            </div>
+            <div class="chart-container">
+                <canvas id="branchChurn"></canvas>
+            </div>
+        </div>
+
+    </div>
+
+    <!-- CUSTOMER VALUE ANALYTICS -->
+    <div class="dashboard-section-heading">
+        <div>
+            <h3>Customer Value &amp; Retention Insights</h3>
+            <p>Explore churn drivers, future customer value and customer segments.</p>
+        </div>
+    </div>
+
+    <div class="dashboard-chart-grid">
+
+        <div class="chart-panel">
+            <div class="chart-panel-header">
+                <h4>Top Churn Reasons</h4>
+                <p>Most frequently identified leading churn factors.</p>
+            </div>
+            <div class="chart-container">
+                <canvas id="topReasons"></canvas>
+            </div>
+        </div>
+
+        <div class="chart-panel">
+            <div class="chart-panel-header">
+                <h4>Predicted Future Customer Value</h4>
+                <p>Customer distribution across future-value ranges.</p>
+            </div>
+            <div class="chart-container">
+                <canvas id="valueBins"></canvas>
+            </div>
+        </div>
+
+        <div class="chart-panel chart-panel-wide">
+            <div class="chart-panel-header">
+                <h4>Customer Segments</h4>
+                <p>Distribution of customers across identified segments.</p>
+            </div>
+            <div class="chart-container chart-short">
+                <canvas id="segments"></canvas>
+            </div>
+        </div>
+
+    </div>
+
+    
+
 </div>
 {% endblock %}
+
 {% block scripts %}
 <script>
-const churnTrend = {{ churn_trend | tojson }};
-const shiftTrend = {{ shift_trend | tojson }};
-const riskDist = {{ risk_dist | tojson }};
-const branchChurn = {{ branch_churn | tojson }};
-const topReasons = {{ top_reasons | tojson }};
-const valueBins = {{ value_bins | tojson }};
-const segments = {{ segments | tojson }};
+(function () {
+    "use strict";
+
+    // Data comes from services/analytics.py via dashboard_payload().
+    const churnTrend = {{ churn_trend|default([], true)|tojson }};
+    const riskDist = {{ risk_dist|default([], true)|tojson }};
+    const shiftTrend = {{ shift_trend|default([], true)|tojson }};
+    const branchChurn = {{ branch_churn|default([], true)|tojson }};
+    const topReasons = {{ top_reasons|default([], true)|tojson }};
+    const valueBins = {{ value_bins|default([], true)|tojson }};
+    const segments = {{ segments|default([], true)|tojson }};
+
+    if (typeof Chart === "undefined") {
+        console.error("Chart.js is not loaded. Check base.html.");
+        return;
+    }
+
+    function isLightTheme() {
+        const root = document.documentElement;
+        const body = document.body;
+
+        const theme = (
+            root.getAttribute("data-bs-theme") ||
+            body.getAttribute("data-bs-theme") ||
+            root.getAttribute("data-theme") ||
+            body.getAttribute("data-theme") ||
+            ""
+        ).toLowerCase();
+
+        if (theme.includes("light")) return true;
+        if (theme.includes("dark")) return false;
+        return false;
+    }
+
+    function colors() {
+        const light = isLightTheme();
+
+        return {
+            text: light ? "#334155" : "#dbe5f4",
+            muted: light ? "#64748b" : "#94a3b8",
+            grid: light ? "rgba(100,116,139,.16)" : "rgba(148,163,184,.18)",
+            tooltipBg: light ? "#ffffff" : "#172033",
+            tooltipText: light ? "#0f172a" : "#f8fafc"
+        };
+    }
+
+    const palette = [
+        "#3b82f6", "#10b981", "#f59e0b", "#ef4444",
+        "#8b5cf6", "#06b6d4", "#f97316", "#ec4899",
+        "#6366f1", "#84cc16", "#14b8a6", "#d946ef"
+    ];
+
+    function baseOptions() {
+        const c = colors();
+
+        return {
+            responsive: true,
+            maintainAspectRatio: false,
+            animation: { duration: 650 },
+            interaction: { intersect: false, mode: "index" },
+            plugins: {
+                legend: {
+                    display: true,
+                    position: "bottom",
+                    labels: {
+                        color: c.text,
+                        usePointStyle: true,
+                        pointStyle: "circle",
+                        padding: 16,
+                        boxWidth: 8
+                    }
+                },
+                tooltip: {
+                    backgroundColor: c.tooltipBg,
+                    titleColor: c.tooltipText,
+                    bodyColor: c.tooltipText,
+                    padding: 12,
+                    cornerRadius: 8
+                }
+            },
+            scales: {
+                x: {
+                    ticks: { color: c.muted, maxRotation: 35 },
+                    grid: { color: c.grid },
+                    border: { display: false }
+                },
+                y: {
+                    beginAtZero: true,
+                    ticks: { color: c.muted },
+                    grid: { color: c.grid },
+                    border: { display: false }
+                }
+            }
+        };
+    }
+
+    function makeChart(id, type, data, options) {
+        const canvas = document.getElementById(id);
+
+        if (!canvas) {
+            console.warn("Dashboard chart canvas not found:", id);
+            return null;
+        }
+
+        return new Chart(canvas, {
+            type: type,
+            data: data,
+            options: options
+        });
+    }
+
+    function labels(rows) {
+        return rows.map(row => row.label ?? "Unknown");
+    }
+
+    function counts(rows) {
+        return rows.map(row => Number(row.n || 0));
+    }
+
+    // 1. Observed versus predicted churn.
+    makeChart("churnTrend", "line", {
+        labels: churnTrend.map(row => row.month),
+        datasets: [
+            {
+                label: "Observed Churn",
+                data: churnTrend.map(row => Number(row.observed || 0) * 100),
+                borderColor: "#3b82f6",
+                backgroundColor: "rgba(59,130,246,.14)",
+                borderWidth: 3,
+                pointRadius: 3,
+                pointHoverRadius: 6,
+                tension: .35,
+                fill: true
+            },
+            {
+                label: "Predicted Churn Probability",
+                data: churnTrend.map(row => Number(row.predicted || 0) * 100),
+                borderColor: "#ec4899",
+                backgroundColor: "rgba(236,72,153,.08)",
+                borderWidth: 3,
+                pointRadius: 3,
+                pointHoverRadius: 6,
+                tension: .35,
+                fill: false
+            }
+        ]
+    }, {
+        ...baseOptions(),
+        scales: {
+            x: {
+                ticks: { color: colors().muted, maxRotation: 35 },
+                grid: { color: colors().grid }
+            },
+            y: {
+                beginAtZero: true,
+                suggestedMax: 100,
+                ticks: {
+                    color: colors().muted,
+                    callback: value => value + "%"
+                },
+                grid: { color: colors().grid }
+            }
+        }
+    });
+
+    // 2. Customer risk distribution.
+    makeChart("riskDist", "doughnut", {
+        labels: labels(riskDist),
+        datasets: [{
+            data: counts(riskDist),
+            backgroundColor: palette.slice(0, Math.max(riskDist.length, 1)),
+            borderColor: isLightTheme() ? "#ffffff" : "#0b1220",
+            borderWidth: 3,
+            hoverOffset: 7
+        }]
+    }, {
+        ...baseOptions(),
+        cutout: "64%",
+        interaction: { intersect: true, mode: "nearest" }
+    });
+
+    // 3. Behaviour shift distribution.
+    makeChart("shiftTrend", "bar", {
+        labels: labels(shiftTrend),
+        datasets: [{
+            label: "Customers",
+            data: counts(shiftTrend),
+            backgroundColor: palette.slice(0, Math.max(shiftTrend.length, 1)),
+            borderRadius: 7,
+            maxBarThickness: 55
+        }]
+    }, {
+        ...baseOptions(),
+        plugins: {
+            ...baseOptions().plugins,
+            legend: { display: false }
+        },
+        scales: {
+            x: {
+                ticks: { color: colors().muted, maxRotation: 35 },
+                grid: { display: false }
+            },
+            y: {
+                beginAtZero: true,
+                ticks: { color: colors().muted, precision: 0 },
+                grid: { color: colors().grid }
+            }
+        }
+    });
+
+    // 4. Branch observed churn versus predicted churn probability.
+    makeChart("branchChurn", "bar", {
+        labels: branchChurn.map(row => row.label),
+        datasets: [
+            {
+                label: "Observed Churn Rate",
+                data: branchChurn.map(row => Number(row.churn_rate || 0) * 100),
+                backgroundColor: "rgba(59,130,246,.82)",
+                borderRadius: 5,
+                maxBarThickness: 32
+            },
+            {
+                label: "Predicted Churn Probability",
+                data: branchChurn.map(row => Number(row.churn_prob || 0) * 100),
+                backgroundColor: "rgba(236,72,153,.82)",
+                borderRadius: 5,
+                maxBarThickness: 32
+            }
+        ]
+    }, {
+        ...baseOptions(),
+        scales: {
+            x: {
+                ticks: {
+                    color: colors().muted,
+                    maxRotation: 55,
+                    minRotation: 25
+                },
+                grid: { display: false }
+            },
+            y: {
+                beginAtZero: true,
+                suggestedMax: 100,
+                ticks: {
+                    color: colors().muted,
+                    callback: value => value + "%"
+                },
+                grid: { color: colors().grid }
+            }
+        }
+    });
+
+    // 5. top_reasons is a list of tuples: [feature, count].
+    const reasonRows = topReasons.map(item => ({
+        label: Array.isArray(item) ? item[0] : (item.label || "Unknown"),
+        count: Number(
+            Array.isArray(item) ? item[1] : (item.n || item.count || 0)
+        )
+    }));
+
+    makeChart("topReasons", "bar", {
+        labels: reasonRows.map(row => row.label),
+        datasets: [{
+            label: "Occurrences",
+            data: reasonRows.map(row => row.count),
+            backgroundColor: palette.slice(0, Math.max(reasonRows.length, 1)),
+            borderRadius: 6,
+            maxBarThickness: 30
+        }]
+    }, {
+        ...baseOptions(),
+        indexAxis: "y",
+        plugins: {
+            ...baseOptions().plugins,
+            legend: { display: false }
+        },
+        scales: {
+            x: {
+                beginAtZero: true,
+                ticks: { color: colors().muted, precision: 0 },
+                grid: { color: colors().grid }
+            },
+            y: {
+                ticks: { color: colors().muted },
+                grid: { display: false }
+            }
+        }
+    });
+
+    // 6. Predicted future customer value distribution.
+    makeChart("valueBins", "bar", {
+        labels: labels(valueBins),
+        datasets: [{
+            label: "Customers",
+            data: counts(valueBins),
+            backgroundColor: palette.slice(0, Math.max(valueBins.length, 1)),
+            borderRadius: 7,
+            maxBarThickness: 55
+        }]
+    }, {
+        ...baseOptions(),
+        plugins: {
+            ...baseOptions().plugins,
+            legend: { display: false }
+        },
+        scales: {
+            x: {
+                ticks: { color: colors().muted, maxRotation: 30 },
+                grid: { display: false }
+            },
+            y: {
+                beginAtZero: true,
+                ticks: { color: colors().muted, precision: 0 },
+                grid: { color: colors().grid }
+            }
+        }
+    });
+
+    // 7. Customer segments.
+    makeChart("segments", "bar", {
+        labels: labels(segments),
+        datasets: [{
+            label: "Customers",
+            data: counts(segments),
+            backgroundColor: palette.slice(0, Math.max(segments.length, 1)),
+            borderRadius: 7,
+            maxBarThickness: 65
+        }]
+    }, {
+        ...baseOptions(),
+        plugins: {
+            ...baseOptions().plugins,
+            legend: { display: false }
+        },
+        scales: {
+            x: {
+                ticks: { color: colors().muted, maxRotation: 35 },
+                grid: { display: false }
+            },
+            y: {
+                beginAtZero: true,
+                ticks: { color: colors().muted, precision: 0 },
+                grid: { color: colors().grid }
+            }
+        }
+    });
+
+    // Refresh chart text/grid colors when the theme toggle changes.
+    function refreshChartTheme() {
+        const c = colors();
+
+        Object.values(Chart.instances).forEach(chart => {
+            if (!chart || !chart.options) return;
+
+            if (chart.options.plugins?.legend?.labels) {
+                chart.options.plugins.legend.labels.color = c.text;
+            }
+
+            if (chart.options.plugins?.tooltip) {
+                chart.options.plugins.tooltip.backgroundColor = c.tooltipBg;
+                chart.options.plugins.tooltip.titleColor = c.tooltipText;
+                chart.options.plugins.tooltip.bodyColor = c.tooltipText;
+            }
+
+            if (chart.options.scales) {
+                Object.values(chart.options.scales).forEach(scale => {
+                    if (scale.ticks) scale.ticks.color = c.muted;
+                    if (scale.grid) scale.grid.color = c.grid;
+                });
+            }
+
+            chart.update("none");
+        });
+    }
+
+    const observer = new MutationObserver(refreshChartTheme);
+
+    observer.observe(document.documentElement, {
+        attributes: true,
+        attributeFilter: ["data-bs-theme", "data-theme", "class"]
+    });
+
+    observer.observe(document.body, {
+        attributes: true,
+        attributeFilter: ["data-bs-theme", "data-theme", "class"]
+    });
+})();
 </script>
-<script src="{{ url_for('static', filename='js/dashboard.js') }}"></script>
 {% endblock %}

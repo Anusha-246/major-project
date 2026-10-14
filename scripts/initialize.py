@@ -14,12 +14,38 @@ from ml.train import train_and_score
 
 
 def reset_database():
+    """Create the schema and clear generated data without deleting accounts."""
     os.makedirs(os.path.dirname(Config.DATABASE_PATH), exist_ok=True)
-    if os.path.exists(Config.DATABASE_PATH):
-        os.remove(Config.DATABASE_PATH)
+
     conn = get_connection()
-    init_schema(conn)
-    conn.close()
+
+    tables = (
+        "alerts",
+        "model_metrics",
+        "retention_strategies",
+        "customer_segments",
+        "customer_value",
+        "churn_predictions",
+        "behaviour_deviations",
+        "customer_engagement",
+        "transactions",
+        "customer_behaviour",
+        "customers",
+        "branches",
+    )
+
+    try:
+        init_schema(conn)
+
+        for table in tables:
+            conn.execute(f"DELETE FROM {table}")
+
+        conn.commit()
+    except Exception:
+        conn.rollback()
+        raise
+    finally:
+        conn.close()
 
 def _insert_df(conn, table, df, columns):
     placeholders = ",".join(["?"] * len(columns))

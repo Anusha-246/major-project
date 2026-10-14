@@ -41,15 +41,29 @@ except ImportError:  # pragma: no cover
 
 
 def _classification_metrics(y_true, y_pred, y_prob) -> dict:
-    tn, fp, fn, tp = confusion_matrix(y_true, y_pred).ravel()
+    tn, fp, fn, tp = confusion_matrix(
+        y_true,
+        y_pred,
+        labels=[0, 1],
+    ).ravel()
+
     return {
         "accuracy": round(float(accuracy_score(y_true, y_pred)), 4),
-        "precision": round(float(precision_score(y_true, y_pred, zero_division=0)), 4),
-        "recall": round(float(recall_score(y_true, y_pred, zero_division=0)), 4),
+        "precision": round(
+            float(precision_score(y_true, y_pred, zero_division=0)), 4
+        ),
+        "recall": round(
+            float(recall_score(y_true, y_pred, zero_division=0)), 4
+        ),
         "f1": round(float(f1_score(y_true, y_pred, zero_division=0)), 4),
         "roc_auc": round(float(roc_auc_score(y_true, y_prob)), 4),
         "pr_auc": round(float(average_precision_score(y_true, y_prob)), 4),
-        "confusion_matrix": {"tn": int(tn), "fp": int(fp), "fn": int(fn), "tp": int(tp)},
+        "confusion_matrix": {
+            "tn": int(tn),
+            "fp": int(fp),
+            "fn": int(fn),
+            "tp": int(tp),
+        },
     }
 
 
